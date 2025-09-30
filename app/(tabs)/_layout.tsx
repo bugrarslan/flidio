@@ -1,54 +1,48 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import * as Haptics from "expo-haptics";
-import { Tabs } from "expo-router";
+import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import React from "react";
 
 const TabLayout = () => {
-  const iconMap: Record<string, { focused: keyof typeof Ionicons.glyphMap; default: keyof typeof Ionicons.glyphMap }> = {
-    home: {
-      focused: "home",
-      default: "home-outline",
-    },
-    settings: {
-      focused: "settings",
-      default: "settings-outline",
-    },
-  };
-
-  const handleTabPress = () => {
-    void Haptics.selectionAsync();
-  };
-
   return (
-    <Tabs
-      screenOptions={({ route }) => {
-        const icons = iconMap[route.name] ?? iconMap.home;
+    <NativeTabs>
+      <NativeTabs.Trigger name="home">
+        <Label>Home</Label>
+        <Icon sf="house.fill" drawable="ic_menu_home" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <Icon sf="gear" drawable="ic_menu_preferences" />
+        <Label>Settings</Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
 
-        return {
-          headerShown: false,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? icons.focused : icons.default}
-              size={size}
-              color={color}
-            />
-          ),
-        };
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-    </Tabs>
+    // <Tabs
+    //   screenOptions={({ route }) => {
+    //     const icons = iconMap[route.name] ?? iconMap.home;
+
+    //     return {
+    //       headerShown: false,
+    //       tabBarIcon: ({ color, size, focused }) => (
+    //         <Ionicons
+    //           name={focused ? icons.focused : icons.default}
+    //           size={size}
+    //           color={color}
+    //         />
+    //       ),
+    //     };
+    //   }}
+    // >
+    //   <Tabs.Screen
+    //     name="home"
+    //     listeners={{
+    //       tabPress: handleTabPress,
+    //     }}
+    //   />
+    //   <Tabs.Screen
+    //     name="settings"
+    //     listeners={{
+    //       tabPress: handleTabPress,
+    //     }}
+    //   />
+    // </Tabs>
   );
 };
 

@@ -99,7 +99,7 @@ const Settings = () => {
 
       <ScrollView
         className="flex-1 px-5"
-        // contentContainerStyle={{ paddingBottom: 48 }}
+        contentContainerStyle={{ paddingBottom: 50 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="mt-6">

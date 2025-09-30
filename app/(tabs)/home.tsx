@@ -20,7 +20,7 @@ const Home = () => {
         <View className="absolute w-64 h-64 rounded-full bottom-24 -left-10 bg-primary-900/10" />
       </View>
 
-      <ScrollView className="flex-1 px-5">
+      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 50 }}>
         <View className="pt-10">
           <Text className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600/80">
             Welcome back
