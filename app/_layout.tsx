@@ -5,16 +5,18 @@ import { useEffect } from "react";
 export default function RootLayout() {
   const router = useRouter();
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       router.replace("/onboardingScreen");
     }, 1000);
-  }, []);
+
+    return () => clearTimeout(timeout);
+  }, [router]);
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="travel/[id]" />
-      <Stack.Screen name="userProfileModal" />
-      <Stack.Screen name="createTravelModal" />
+      <Stack.Screen name="userProfileModal" options={{ presentation: "modal" }} />
+      <Stack.Screen name="createTravelModal" options={{ presentation: "modal" }} />
       <Stack.Screen name="onboardingScreen" />
     </Stack>
   );
