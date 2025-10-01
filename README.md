@@ -124,16 +124,6 @@ flidio/
 
 ### **Database Schema**
 ```sql
--- Users table
-CREATE TABLE users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  age INTEGER,
-  location TEXT,
-  preferences TEXT, -- JSON string
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Travels table
 CREATE TABLE travels (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,17 +134,8 @@ CREATE TABLE travels (
   end_date TEXT,d
   budget TEXT,
   travellers TEXT,
-  trip_vibes TEXT,
-  notes TEXT,
-  user_credentials TEXT,
   itinerary TEXT, -- JSON string from AI
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Settings table
-CREATE TABLE settings (
-  key TEXT PRIMARY KEY,
-  value TEXT
 );
 ```
 

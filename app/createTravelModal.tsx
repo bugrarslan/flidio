@@ -2,6 +2,7 @@ import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
 import { generateResponse } from "@/services/aiService";
+import { createTravel } from "@/services/databaseService";
 import { formatPrompt } from "@/utils/formatPrompt";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -123,6 +124,33 @@ const CreateTravelModal = () => {
       setIsGenerating(true);
       const aiResponse = await generateResponse(prompt);
       console.log("AI itinerary response:", aiResponse);
+
+      const savedTravel = await createTravel({
+        title: title.trim(),
+        departure: profile?.location?.trim() || "Unknown departure",
+        destination: destination.trim(),
+        startDate: startDate.trim() || null,
+        endDate: endDate.trim() || null,
+        budget: normalizedBudget,
+        travellersCount: normalizedTravelers,
+        itinerary: aiResponse,
+      });
+      console.log("Saved travel record:", savedTravel);
+
+      Alert.alert("Itinerary ready!", "Your trip has been saved to Travels.", [
+        {
+          text: "View now",
+          onPress: () =>
+            router.replace({
+              pathname: "/travel/[id]",
+              params: { id: String(savedTravel.id) },
+            }),
+        },
+        {
+          text: "Close",
+          style: "cancel",
+        },
+      ]);
     } catch (error) {
       console.error("Failed to generate itinerary:", error);
       Alert.alert(
