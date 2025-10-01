@@ -1,3 +1,5 @@
+import BackgroundCircles from "@/components/ui/BackgroundCircles";
+import { useSettingsContext } from "@/context/SettingsContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -25,6 +27,7 @@ const TRIP_VIBES = [
 
 const CreateTravelModal = () => {
   const router = useRouter();
+  const { settings } = useSettingsContext();
 
   const [title, setTitle] = useState("");
   const [destination, setDestination] = useState("");
@@ -34,6 +37,33 @@ const CreateTravelModal = () => {
   const [travelers, setTravelers] = useState("1");
   const [notes, setNotes] = useState("");
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
+
+  const isDarkMode = settings?.theme === "dark";
+  const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
+  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
+  const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
+  const accentTextClass = isDarkMode ? "text-accent-text-dark" : "text-accent-text-light";
+  const accentMutedTextClass = isDarkMode
+    ? "text-accent-text-muted-dark"
+    : "text-accent-text-muted-light";
+  const labelTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
+  const cardClass = isDarkMode
+    ? "bg-card-dark border border-border-dark"
+    : "bg-card-light border border-border-light";
+  const cardShadowClass = isDarkMode ? "shadow-xl shadow-primary-900/20" : "shadow-lg shadow-primary-900/5";
+  const inputContainerClass = isDarkMode
+    ? "bg-input-background-dark border border-border-dark"
+    : "bg-input-background-light border border-border-light";
+  const inputTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
+  const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
+  const iconPrimaryColor = isDarkMode ? "#93c5fd" : "#2563eb";
+  const vibeActiveContainerClass = isDarkMode
+    ? "border-primary-500 bg-primary-600/20"
+    : "border-primary-600 bg-primary-600/10";
+  const vibeInactiveContainerClass = isDarkMode
+    ? "border-border-dark bg-card-dark"
+    : "border-primary-500/20 bg-white";
+  const vibeInactiveTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
 
   const isFormValid = useMemo(() => {
     return title.trim().length > 2 && destination.trim().length > 2;
@@ -79,17 +109,14 @@ const CreateTravelModal = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary-50">
+    <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
       >
         {/* Background decorative circles */}
-        <View className="absolute inset-0">
-          <View className="absolute w-56 h-56 rounded-full -top-16 -right-16 bg-primary-500/15" />
-          <View className="absolute w-64 h-64 rounded-full bottom-24 -left-10 bg-primary-900/10" />
-        </View>
+        <BackgroundCircles isDarkMode={isDarkMode} />
 
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-4">
@@ -97,12 +124,12 @@ const CreateTravelModal = () => {
             onPress={handleCloseModal}
             className="flex-row items-center gap-2"
           >
-            <Ionicons name="close" size={22} color="#1e3a8a" />
-            <Text className="text-base font-medium text-primary-900">
+            <Ionicons name="close" size={22} color={iconPrimaryColor} />
+            <Text className={`text-base font-medium ${headingTextClass}`}>
               Close
             </Text>
           </Pressable>
-          <Text className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600/80">
+          <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
             Trip builder
           </Text>
         </View>
@@ -111,16 +138,16 @@ const CreateTravelModal = () => {
           className="flex-1 px-5"
           keyboardShouldPersistTaps="handled"
         >
-          <View className="p-6 mt-6 shadow-lg rounded-3xl bg-white/85 shadow-primary-900/5">
+          <View className={`p-6 mt-6 rounded-3xl ${cardClass} ${cardShadowClass}`}>
             <View className="flex-row items-start gap-4">
-              <View className="p-4 rounded-2xl bg-primary-600/10">
-                <Ionicons name="planet-outline" size={28} color="#2563eb" />
+              <View className={`p-4 rounded-2xl ${isDarkMode ? "bg-primary-600/20" : "bg-primary-600/10"}`}>
+                <Ionicons name="planet-outline" size={28} color={iconPrimaryColor} />
               </View>
               <View className="flex-1">
-                <Text className="text-2xl font-semibold text-primary-900">
+                <Text className={`text-2xl font-semibold ${headingTextClass}`}>
                   Describe your dream escape
                 </Text>
-                <Text className="mt-1 text-sm text-secondary-500">
+                <Text className={`mt-1 text-sm ${bodyTextClass}`}>
                   Flidio will pair these details with your traveler profile to
                   craft a tailored itinerary.
                 </Text>
@@ -129,73 +156,65 @@ const CreateTravelModal = () => {
 
             <View className="gap-4 mt-6 space-y-5">
               <View>
-                <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Trip title
                 </Text>
-                <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                  <Ionicons name="bookmark-outline" size={20} color="#2563eb" />
+                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                  <Ionicons name="bookmark-outline" size={20} color={iconPrimaryColor} />
                   <TextInput
                     value={title}
                     onChangeText={setTitle}
                     placeholder="Birthday escape to Kyoto"
-                    placeholderTextColor="#94a3b8"
-                    className="flex-1 text-base text-primary-900 h-7"
+                    placeholderTextColor={placeholderColor}
+                    className={`flex-1 text-base h-7 ${inputTextClass}`}
                   />
                 </View>
               </View>
 
               <View>
-                <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Destination
                 </Text>
-                <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                  <Ionicons name="location-outline" size={20} color="#2563eb" />
+                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                  <Ionicons name="location-outline" size={20} color={iconPrimaryColor} />
                   <TextInput
                     value={destination}
                     onChangeText={setDestination}
                     placeholder="Kyoto, Japan"
-                    placeholderTextColor="#94a3b8"
-                    className="flex-1 text-base text-primary-900 h-7"
+                    placeholderTextColor={placeholderColor}
+                    className={`flex-1 text-base h-7 ${inputTextClass}`}
                   />
                 </View>
               </View>
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     Start date
                   </Text>
-                  <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                    <Ionicons
-                      name="calendar-outline"
-                      size={20}
-                      color="#2563eb"
-                    />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                    <Ionicons name="calendar-outline" size={20} color={iconPrimaryColor} />
                     <TextInput
                       value={startDate}
                       onChangeText={setStartDate}
                       placeholder="2025-05-10"
-                      placeholderTextColor="#94a3b8"
-                      className="flex-1 text-base text-primary-900 h-7"
+                      placeholderTextColor={placeholderColor}
+                      className={`flex-1 text-base h-7 ${inputTextClass}`}
                     />
                   </View>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     End date
                   </Text>
-                  <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                    <Ionicons
-                      name="calendar-number-outline"
-                      size={20}
-                      color="#2563eb"
-                    />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                    <Ionicons name="calendar-number-outline" size={20} color={iconPrimaryColor} />
                     <TextInput
                       value={endDate}
                       onChangeText={setEndDate}
                       placeholder="2025-05-16"
-                      placeholderTextColor="#94a3b8"
-                      className="flex-1 text-base text-primary-900 h-7"
+                      placeholderTextColor={placeholderColor}
+                      className={`flex-1 text-base h-7 ${inputTextClass}`}
                     />
                   </View>
                 </View>
@@ -203,11 +222,11 @@ const CreateTravelModal = () => {
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     Budget (USD)
                   </Text>
-                  <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                    <Ionicons name="cash-outline" size={20} color="#2563eb" />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                    <Ionicons name="cash-outline" size={20} color={iconPrimaryColor} />
                     <TextInput
                       value={budget}
                       onChangeText={(value) => {
@@ -217,17 +236,17 @@ const CreateTravelModal = () => {
                       }}
                       placeholder="2500"
                       keyboardType="decimal-pad"
-                      placeholderTextColor="#94a3b8"
-                      className="flex-1 text-base text-primary-900 h-7"
+                      placeholderTextColor={placeholderColor}
+                      className={`flex-1 text-base h-7 ${inputTextClass}`}
                     />
                   </View>
                 </View>
                 <View className="w-28">
-                  <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     Travelers
                   </Text>
-                  <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                    <Ionicons name="people-outline" size={20} color="#2563eb" />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                    <Ionicons name="people-outline" size={20} color={iconPrimaryColor} />
                     <TextInput
                       value={travelers}
                       onChangeText={(value) => {
@@ -237,15 +256,15 @@ const CreateTravelModal = () => {
                       }}
                       placeholder="2"
                       keyboardType="number-pad"
-                      placeholderTextColor="#94a3b8"
-                      className="flex-1 text-base text-primary-900 h-7"
+                      placeholderTextColor={placeholderColor}
+                      className={`flex-1 text-base h-7 ${inputTextClass}`}
                     />
                   </View>
                 </View>
               </View>
 
               <View>
-                <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Trip vibe
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -256,13 +275,13 @@ const CreateTravelModal = () => {
                         key={vibe}
                         onPress={() => toggleVibe(vibe)}
                         className={`rounded-full border px-4 py-2 ${
-                          isActive
-                            ? "border-primary-600 bg-primary-600/10"
-                            : "border-primary-500/20 bg-white"
+                          isActive ? vibeActiveContainerClass : vibeInactiveContainerClass
                         }`}
                       >
                         <Text
-                          className={`text-sm font-medium ${isActive ? "text-primary-700" : "text-secondary-600"}`}
+                          className={`text-sm font-medium ${
+                            isActive ? accentTextClass : vibeInactiveTextClass
+                          }`}
                         >
                           {vibe}
                         </Text>
@@ -273,17 +292,17 @@ const CreateTravelModal = () => {
               </View>
 
               <View>
-                <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-600">
+                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Special requests
                 </Text>
-                <View className="px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
+                <View className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
                   <TextInput
                     value={notes}
                     onChangeText={setNotes}
                     placeholder="Add must-see spots, dietary needs, or mobility notes."
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={placeholderColor}
                     multiline
-                    className="min-h-[96px] text-base text-primary-900"
+                    className={`min-h-[96px] text-base ${inputTextClass}`}
                   />
                 </View>
               </View>
@@ -291,7 +310,7 @@ const CreateTravelModal = () => {
           </View>
 
           {/* Generate itinerary button */}
-          <View className="mt-8 space-y-4">
+          <View className="mt-8">
             <Pressable
               onPress={handleGenerateItinerary}
               className={`flex-row items-center justify-center gap-2 rounded-full px-6 py-4 ${
@@ -306,6 +325,16 @@ const CreateTravelModal = () => {
                 Generate itinerary with AI
               </Text>
             </Pressable>
+
+            {/* <Pressable
+              onPress={handleCloseModal}
+              className={`flex-row items-center justify-center gap-2 rounded-full px-6 py-4 ${secondaryButtonClass}`}
+            >
+              <Ionicons name="arrow-back" size={20} color={iconPrimaryColor} />
+              <Text className={`text-base font-semibold ${accentTextClass}`}>
+                Keep exploring
+              </Text>
+            </Pressable> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

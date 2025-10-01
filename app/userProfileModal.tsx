@@ -1,7 +1,8 @@
+import { useSettingsContext } from "@/context/SettingsContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,6 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useUserProfileContext } from "@/context/UserProfileContext";
 
 const TRAVEL_STYLES = [
@@ -34,6 +36,7 @@ const BUDGET_LEVELS = [
 
 const UserProfileModal = () => {
   const router = useRouter();
+  const { settings, updateSettings } = useSettingsContext();
   const { profile, saveProfile, saving } = useUserProfileContext();
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
@@ -41,6 +44,47 @@ const UserProfileModal = () => {
   const [bio, setBio] = useState("");
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [travelStyles, setTravelStyles] = useState<string[]>([]);
+
+  const isDarkMode = settings?.theme === "dark";
+  const screenBackgroundClass = isDarkMode
+    ? "bg-background-dark"
+    : "bg-background-light";
+  const headingTextClass = isDarkMode
+    ? "text-text-primary-dark"
+    : "text-text-primary-light";
+  const bodyTextClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-text-secondary-light";
+  const accentTextClass = isDarkMode
+    ? "text-accent-text-dark"
+    : "text-accent-text-light";
+  const labelTextClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-secondary-600";
+  const cardClass = isDarkMode
+    ? "bg-card-dark border border-border-dark"
+    : "bg-card-light border border-border-light";
+  const cardShadowClass = isDarkMode
+    ? "shadow-xl shadow-primary-900/20"
+    : "shadow-lg shadow-primary-900/5";
+  const inputContainerClass = isDarkMode
+    ? "bg-input-background-dark border border-border-dark"
+    : "bg-input-background-light border border-border-light";
+  const inputTextClass = isDarkMode
+    ? "text-text-primary-dark"
+    : "text-text-primary-light";
+  const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
+  const iconPrimaryColor = isDarkMode ? "#93c5fd" : "#2563eb";
+  const iconSecondaryColor = isDarkMode ? "#cbd5f5" : "#475569";
+  const chipActiveContainerClass = isDarkMode
+    ? "border-primary-500 bg-primary-600/20"
+    : "border-primary-600 bg-primary-600/10";
+  const chipInactiveContainerClass = isDarkMode
+    ? "border-border-dark bg-card-dark"
+    : "border-primary-500/20 bg-white";
+  const chipInactiveTextClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-secondary-600";
 
   useEffect(() => {
     if (!profile) {
@@ -52,7 +96,11 @@ const UserProfileModal = () => {
     setBio(profile.bio ?? "");
     setSelectedBudget(profile.selectedBudget ?? null);
     setTravelStyles(profile.travelStyles ?? []);
-    setAge(profile.age !== undefined && profile.age !== null ? String(profile.age) : "");
+    setAge(
+      profile.age !== undefined && profile.age !== null
+        ? String(profile.age)
+        : ""
+    );
   }, [profile]);
 
   const isFormValid = useMemo(() => {
@@ -88,6 +136,7 @@ const UserProfileModal = () => {
         selectedBudget: selectedBudget ?? undefined,
         travelStyles,
       });
+      await markOnboardingComplete();
       router.replace("/(tabs)/home");
     } catch (error) {
       console.error("[profile] Failed to save user profile", error);
@@ -95,8 +144,17 @@ const UserProfileModal = () => {
     }
   };
 
+  const markOnboardingComplete = useCallback(async () => {
+    try {
+      await updateSettings({ showOnboarding: false });
+    } catch (error) {
+      console.error("[onboarding] Failed to mark onboarding complete", error);
+    }
+  }, [updateSettings]);
+
   const handleSkip = async () => {
     await Haptics.selectionAsync();
+    await markOnboardingComplete();
     router.replace("/(tabs)/home");
   };
 
@@ -106,16 +164,13 @@ const UserProfileModal = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary-50">
+    <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
       >
-        <View className="absolute inset-0">
-          <View className="absolute w-56 h-56 rounded-full -top-16 -right-16 bg-primary-500/15" />
-          <View className="absolute w-64 h-64 rounded-full bottom-24 -left-10 bg-primary-900/10" />
-        </View>
+        <BackgroundCircles isDarkMode={isDarkMode} />
 
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-4">
@@ -123,11 +178,15 @@ const UserProfileModal = () => {
             onPress={handleGoBack}
             className="flex-row items-center gap-2"
           >
-            <Ionicons name="chevron-back" size={22} color="#1e3a8a" />
-            <Text className="text-base font-medium text-primary-900">Back</Text>
+            <Ionicons name="chevron-back" size={22} color={iconPrimaryColor} />
+            <Text className={`text-base font-medium ${headingTextClass}`}>
+              Back
+            </Text>
           </Pressable>
           <Pressable onPress={handleSkip}>
-            <Text className="text-sm font-semibold uppercase text-primary-600">
+            <Text
+              className={`text-sm font-semibold uppercase ${accentTextClass}`}
+            >
               Skip for now
             </Text>
           </Pressable>
@@ -138,16 +197,24 @@ const UserProfileModal = () => {
           contentContainerStyle={{ paddingBottom: 36 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="p-6 mt-8 shadow-lg rounded-3xl bg-white/80 shadow-primary-900/5">
+          <View
+            className={`p-6 mt-8 rounded-3xl ${cardClass} ${cardShadowClass}`}
+          >
             <View className="flex-row items-center gap-4">
-              <View className="p-4 rounded-full bg-primary-500/20">
-                <Ionicons name="person-outline" size={28} color="#2563eb" />
+              <View
+                className={`p-4 rounded-full ${isDarkMode ? "bg-primary-600/20" : "bg-primary-500/20"}`}
+              >
+                <Ionicons
+                  name="person-outline"
+                  size={28}
+                  color={iconPrimaryColor}
+                />
               </View>
               <View className="flex-1">
-                <Text className="text-2xl font-semibold text-primary-900">
+                <Text className={`text-2xl font-semibold ${headingTextClass}`}>
                   Complete your traveler profile
                 </Text>
-                <Text className="mt-1 text-sm text-secondary-500">
+                <Text className={`mt-1 text-sm ${bodyTextClass}`}>
                   Share a few details so Flidio can tailor itineraries that feel
                   made for you.
                 </Text>
@@ -156,31 +223,43 @@ const UserProfileModal = () => {
 
             <View className="gap-4 mt-6 space-y-5">
               <View>
-                <Text className="text-sm font-semibold tracking-wide uppercase text-secondary-600">
+                <Text
+                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Full name
                 </Text>
-                <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                  <Ionicons name="id-card-outline" size={20} color="#2563eb" />
+                <View
+                  className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                >
+                  <Ionicons
+                    name="id-card-outline"
+                    size={20}
+                    color={iconPrimaryColor}
+                  />
                   <TextInput
                     value={name}
                     onChangeText={setName}
                     placeholder="Alex Traveler"
-                    placeholderTextColor="#94a3b8"
-                    className="flex-1 text-base h-7 text-primary-900"
+                    placeholderTextColor={placeholderColor}
+                    className={`flex-1 text-base h-7 ${inputTextClass}`}
                   />
                 </View>
               </View>
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className="text-sm font-semibold tracking-wide uppercase text-secondary-600">
+                  <Text
+                    className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
+                  >
                     Age
                   </Text>
-                  <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
+                  <View
+                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                  >
                     <Ionicons
                       name="calendar-outline"
                       size={20}
-                      color="#2563eb"
+                      color={iconPrimaryColor}
                     />
                     <TextInput
                       value={age}
@@ -191,34 +270,40 @@ const UserProfileModal = () => {
                       }}
                       placeholder="28"
                       keyboardType="number-pad"
-                      placeholderTextColor="#94a3b8"
-                      className="flex-1 text-base text-primary-900 h-7"
+                      placeholderTextColor={placeholderColor}
+                      className={`flex-1 text-base h-7 ${inputTextClass}`}
                     />
                   </View>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-semibold tracking-wide uppercase text-secondary-600">
+                  <Text
+                    className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
+                  >
                     Home base
                   </Text>
-                  <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
+                  <View
+                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                  >
                     <Ionicons
                       name="navigate-outline"
                       size={20}
-                      color="#2563eb"
+                      color={iconPrimaryColor}
                     />
                     <TextInput
                       value={location}
                       onChangeText={setLocation}
                       placeholder="Lisbon, Portugal"
-                      placeholderTextColor="#94a3b8"
-                      className="flex-1 text-base text-primary-900 h-7"
+                      placeholderTextColor={placeholderColor}
+                      className={`flex-1 text-base h-7 ${inputTextClass}`}
                     />
                   </View>
                 </View>
               </View>
 
               <View>
-                <Text className="text-sm font-semibold tracking-wide uppercase text-secondary-600">
+                <Text
+                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Budget preference
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -232,17 +317,21 @@ const UserProfileModal = () => {
                         }
                         className={`flex-row items-center gap-2 rounded-full border px-4 py-2 ${
                           isSelected
-                            ? "border-primary-600 bg-primary-600/10"
-                            : "border-primary-500/20 bg-white"
+                            ? chipActiveContainerClass
+                            : chipInactiveContainerClass
                         }`}
                       >
                         <Ionicons
                           name={budget.icon as keyof typeof Ionicons.glyphMap}
                           size={18}
-                          color={isSelected ? "#2563eb" : "#475569"}
+                          color={
+                            isSelected ? iconPrimaryColor : iconSecondaryColor
+                          }
                         />
                         <Text
-                          className={`text-sm font-medium ${isSelected ? "text-primary-600" : "text-secondary-600"}`}
+                          className={`text-sm font-medium ${
+                            isSelected ? accentTextClass : chipInactiveTextClass
+                          }`}
                         >
                           {budget.label}
                         </Text>
@@ -253,7 +342,9 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text className="text-sm font-semibold tracking-wide uppercase text-secondary-600">
+                <Text
+                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Travel styles
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -265,12 +356,14 @@ const UserProfileModal = () => {
                         onPress={() => toggleStyle(style)}
                         className={`rounded-full border px-4 py-2 ${
                           isActive
-                            ? "border-primary-600 bg-primary-600/10"
-                            : "border-primary-500/20 bg-white"
+                            ? chipActiveContainerClass
+                            : chipInactiveContainerClass
                         }`}
                       >
                         <Text
-                          className={`text-sm font-medium ${isActive ? "text-primary-700" : "text-secondary-600"}`}
+                          className={`text-sm font-medium ${
+                            isActive ? accentTextClass : chipInactiveTextClass
+                          }`}
                         >
                           {style}
                         </Text>
@@ -281,16 +374,20 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text className="text-sm font-semibold tracking-wide uppercase text-secondary-600">
+                <Text
+                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Trip wishlist
                 </Text>
-                <View className="px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
+                <View
+                  className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                >
                   <TextInput
                     value={bio}
                     onChangeText={setBio}
                     placeholder="Tell us the kind of adventures you can’t wait to experience."
-                    placeholderTextColor="#94a3b8"
-                    className="min-h-[96px] text-base text-primary-900"
+                    placeholderTextColor={placeholderColor}
+                    className={`min-h-[96px] text-base ${inputTextClass}`}
                     multiline
                   />
                 </View>
@@ -298,7 +395,7 @@ const UserProfileModal = () => {
             </View>
           </View>
 
-          <View className="gap-4 mt-8 space-y-4">
+          <View className="mt-8">
             <Pressable
               onPress={handleSaveProfile}
               className={`flex-row items-center justify-center gap-2 rounded-full px-6 py-4 ${
@@ -316,15 +413,15 @@ const UserProfileModal = () => {
               </Text>
             </Pressable>
 
-            <Pressable
+            {/* <Pressable
               onPress={handleSkip}
-              className="flex-row items-center justify-center gap-2 px-6 py-4 bg-white border rounded-full border-primary-500/40"
+              className={`flex-row items-center justify-center gap-2 px-6 py-4 rounded-full ${secondaryButtonClass}`}
             >
-              <Ionicons name="time-outline" size={20} color="#2563eb" />
-              <Text className="text-base font-semibold text-primary-600">
+              <Ionicons name="time-outline" size={20} color={iconPrimaryColor} />
+              <Text className={`text-base font-semibold ${accentMutedTextClass}`}>
                 Maybe later
               </Text>
-            </Pressable>
+            </Pressable> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

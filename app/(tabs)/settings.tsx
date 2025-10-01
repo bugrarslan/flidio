@@ -38,6 +38,23 @@ const SUPPORT_LINKS = [
 const Settings = () => {
   const { settings, updateSettings, saving } = useSettingsContext();
 
+  const isDarkMode = settings?.theme === "dark";
+
+  const backgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
+  const textPrimaryClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
+  const textSecondaryClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
+  const cardClass = isDarkMode ? "bg-card-dark border-border-dark" : "bg-card-light border-border-light";
+  const inputSurfaceClass = isDarkMode
+    ? "bg-input-background-dark border-border-dark"
+    : "bg-input-background-light border-border-light";
+  const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
+  const iconAccentColor = isDarkMode ? "#60a5fa" : "#2563eb";
+  const iconMutedColor = isDarkMode ? "#94a3b8" : "#475569";
+  const switchTrackColors = isDarkMode
+    ? { false: "#1f2937", true: "#2563eb" }
+    : { false: "#cbd5f5", true: "#2563eb" };
+  const switchThumbColor = isDarkMode ? "#f1f5f9" : "#f8fafc";
+
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [confirmingClear, setConfirmingClear] = useState(false);
@@ -51,8 +68,6 @@ const Settings = () => {
       setApiKey(settings.aiApiKey);
     }
   }, [settings]);
-
-  const isDarkMode = settings?.theme === "dark";
 
   const handleToggleTheme = useCallback(async () => {
     await Haptics.selectionAsync();
@@ -114,8 +129,8 @@ const Settings = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary-50">
-      <BackgroundCircles />
+    <SafeAreaView className={`flex-1 ${backgroundClass}`}>
+      <BackgroundCircles isDarkMode={isDarkMode} />
 
       <ScrollView
         className="flex-1 px-5"
@@ -123,37 +138,41 @@ const Settings = () => {
         showsVerticalScrollIndicator={false}
       >
         <View className="mt-6">
-          <Text className="text-3xl font-bold text-primary-900">Settings</Text>
-          <Text className="mt-2 text-base text-secondary-600">
+          <Text className={`text-3xl font-bold ${textPrimaryClass}`}>Settings</Text>
+          <Text className={`mt-2 text-base ${textSecondaryClass}`}>
             Tune Flidio to match your travel workflow, update AI access, and manage your data.
           </Text>
         </View>
 
         <View className="gap-4 mt-8 space-y-6">
-          <View className="p-6 shadow-lg rounded-3xl bg-white/80 shadow-primary-900/5">
+          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-primary-900">Google AI access</Text>
-                <Text className="mt-1 text-sm text-secondary-500">
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Google AI access</Text>
+                <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
                   Add your Google Generative AI key so we can craft itineraries in real time.
                 </Text>
               </View>
-              <Ionicons name="sparkles-outline" size={24} color="#2563eb" />
+              <Ionicons name="sparkles-outline" size={24} color={iconAccentColor} />
             </View>
 
             <View className="mt-4">
-              <Text className="text-xs font-semibold tracking-wide uppercase text-secondary-500">API key</Text>
-              <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
-                <Ionicons name="key-outline" size={20} color="#2563eb" />
+              <Text className={`text-xs font-semibold tracking-wide uppercase ${textSecondaryClass}`}>
+                API key
+              </Text>
+              <View
+                className={`flex-row items-center gap-3 px-4 py-3 mt-2 border rounded-2xl ${inputSurfaceClass}`}
+              >
+                <Ionicons name="key-outline" size={20} color={iconAccentColor} />
                 <TextInput
                   value={apiKey}
                   onChangeText={setApiKey}
                   placeholder="AIza..."
                   autoCapitalize="none"
                   autoCorrect={false}
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={placeholderColor}
                   secureTextEntry={!showApiKey}
-                  className="flex-1 text-base text-primary-900 h-7"
+                  className={`flex-1 text-base h-7 ${textPrimaryClass}`}
                 />
                 <Pressable
                   onPress={async () => {
@@ -161,7 +180,11 @@ const Settings = () => {
                     setShowApiKey((prev) => !prev);
                   }}
                 >
-                  <Ionicons name={showApiKey ? "eye-off-outline" : "eye-outline"} size={20} color="#475569" />
+                  <Ionicons
+                    name={showApiKey ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color={iconMutedColor}
+                  />
                 </Pressable>
               </View>
 
@@ -182,33 +205,35 @@ const Settings = () => {
             </View>
           </View>
 
-            <View className="p-6 shadow-lg rounded-3xl bg-white/80 shadow-primary-900/5">
+          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
-              <Text className="text-lg font-semibold text-primary-900">Dark Theme</Text>
-              <Text className="flex-shrink mt-1 text-sm text-secondary-500">
-                Switch between light and dark to match your environment.
-              </Text>
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Dark Theme</Text>
+                <Text className={`flex-shrink mt-1 text-sm ${textSecondaryClass}`}>
+                  Switch between light and dark to match your environment.
+                </Text>
               </View>
               <Switch
-                value={isDarkMode ?? false}
+                value={isDarkMode}
                 onValueChange={handleToggleTheme}
-                thumbColor={isDarkMode ? "#2563eb" : "#e2e8f0"}
+                trackColor={switchTrackColors}
+                thumbColor={switchThumbColor}
+                ios_backgroundColor={switchTrackColors.false}
                 disabled={saving}
               />
             </View>
-            </View>
+          </View>
 
-          <View className="p-6 shadow-lg rounded-3xl bg-white/80 shadow-primary-900/5">
-            <Text className="text-lg font-semibold text-primary-900">Data control</Text>
-            <Text className="mt-1 text-sm text-secondary-500">
+          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+            <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Data control</Text>
+            <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
               Manage the travel plans and profile details stored locally on this device.
             </Text>
 
             <Pressable
               onPress={handleClearData}
               className={`mt-5 flex-row items-center justify-between rounded-2xl border px-4 py-3 ${
-              confirmingClear ? "border-red-500 bg-red-50" : "border-primary-500/20 bg-white"
+                confirmingClear ? "border-red-500 bg-red-500/10" : cardClass
               }`}
             >
               <View className="flex-row items-center flex-1 gap-3">
@@ -216,36 +241,42 @@ const Settings = () => {
                 <Ionicons name="trash-outline" size={20} color="#ef4444" />
               </View>
               <View className="flex-1 mr-2">
-                <Text className="text-base font-semibold text-primary-900">Clear local data</Text>
-                <Text className="text-xs text-secondary-500">Removes saved itineraries, profile, and settings.</Text>
+                <Text className={`text-base font-semibold ${textPrimaryClass}`}>Clear local data</Text>
+                <Text className={`text-xs ${textSecondaryClass}`}>
+                  Removes saved itineraries, profile, and settings.
+                </Text>
               </View>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={confirmingClear ? "#ef4444" : "#94a3b8"} />
+              <Ionicons name="chevron-forward" size={18} color={confirmingClear ? "#ef4444" : iconMutedColor} />
             </Pressable>
           </View>
 
-          <View className="p-6 shadow-lg rounded-3xl bg-white/80 shadow-primary-900/5">
-            <Text className="text-lg font-semibold text-primary-900">About Flidio</Text>
+          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+            <Text className={`text-lg font-semibold ${textPrimaryClass}`}>About Flidio</Text>
             <View className="gap-2 mt-4 space-y-3">
-              <View className="flex-row items-center justify-between px-4 py-3 bg-white border rounded-2xl border-primary-500/20">
+              <View className={`flex-row items-center justify-between px-4 py-3 border rounded-2xl ${cardClass}`}>
                 <View className="flex-row items-center gap-3">
-                  <Ionicons name="information-circle-outline" size={20} color="#2563eb" />
-                  <Text className="text-base font-medium text-primary-900">Version</Text>
+                  <Ionicons name="information-circle-outline" size={20} color={iconAccentColor} />
+                  <Text className={`text-base font-medium ${textPrimaryClass}`}>Version</Text>
                 </View>
-                <Text className="text-sm font-semibold text-secondary-500">v{appVersion}</Text>
+                <Text className={`text-sm font-semibold ${textSecondaryClass}`}>v{appVersion}</Text>
               </View>
 
               {SUPPORT_LINKS.map((link) => (
                 <Pressable
                   key={link.label}
                   onPress={() => handleOpenLink(link.url)}
-                  className="flex-row items-center justify-between px-4 py-3 bg-white border rounded-2xl border-primary-500/20"
+                  className={`flex-row items-center justify-between px-4 py-3 border rounded-2xl ${cardClass}`}
                 >
                   <View className="flex-row items-center gap-3">
-                    <Ionicons name={link.icon as keyof typeof Ionicons.glyphMap} size={20} color="#2563eb" />
-                    <Text className="text-base font-medium text-primary-900">{link.label}</Text>
+                    <Ionicons
+                      name={link.icon as keyof typeof Ionicons.glyphMap}
+                      size={20}
+                      color={iconAccentColor}
+                    />
+                    <Text className={`text-base font-medium ${textPrimaryClass}`}>{link.label}</Text>
                   </View>
-                  <Ionicons name="open-outline" size={18} color="#64748b" />
+                  <Ionicons name="open-outline" size={18} color={iconMutedColor} />
                 </Pressable>
               ))}
             </View>
