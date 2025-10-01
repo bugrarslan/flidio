@@ -16,6 +16,10 @@ module.exports = {
           500: "#64748b",
           600: "#475569",
         },
+        dark: {
+          primary: {},
+          secondary: {}
+        }
       },
     },
   },
