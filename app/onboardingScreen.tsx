@@ -7,8 +7,7 @@ import React, { useCallback } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { createDefaultSettings, type StoredSettings } from "@/hooks/useSettingsStorage";
-import { asyncStorageService, storageKeys } from "@/services/asyncStorage";
+import { useSettingsContext } from "@/context/SettingsContext";
 
 const FEATURE_HIGHLIGHTS = [
   {
@@ -30,26 +29,15 @@ const FEATURE_HIGHLIGHTS = [
 
 const OnboardingScreen = () => {
   const router = useRouter();
+  const { updateSettings } = useSettingsContext();
 
   const markOnboardingComplete = useCallback(async () => {
     try {
-      const existing = await asyncStorageService.getItem<StoredSettings>(storageKeys.settings, {
-        fallback: createDefaultSettings(),
-      });
-
-      const baseSettings = existing ?? createDefaultSettings();
-
-      const nextSettings: StoredSettings = {
-        ...baseSettings,
-        showOnboarding: false,
-        lastUpdatedAt: new Date().toISOString(),
-      };
-
-      await asyncStorageService.setItem(storageKeys.settings, nextSettings);
+      await updateSettings({ showOnboarding: false });
     } catch (error) {
       console.error("[onboarding] Failed to mark onboarding complete", error);
     }
-  }, []);
+  }, [updateSettings]);
 
   const handleGetStarted = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

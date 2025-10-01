@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Linking,
@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { useSettingsContext } from "@/context/SettingsContext";
 
 const SUPPORT_LINKS = [
   {
@@ -33,27 +35,53 @@ const SUPPORT_LINKS = [
 ] as const;
 
 const Settings = () => {
+  const { settings, updateSettings, saving } = useSettingsContext();
+
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [confirmingClear, setConfirmingClear] = useState(false);
 
   const appVersion = useMemo(() => {
     return Constants.expoConfig?.version ?? "1.0.0";
   }, []);
 
-  const handleToggleTheme = async () => {
-    await Haptics.selectionAsync();
-    setIsDarkMode((prev) => !prev);
-    // TODO: Hook into ThemeContext once implemented
-  };
+  useEffect(() => {
+    if (settings) {
+      setApiKey(settings.aiApiKey);
+    }
+  }, [settings]);
 
-  const handleSaveApiKey = async () => {
+  const isDarkMode = settings?.theme === "dark";
+
+  const handleToggleTheme = useCallback(async () => {
+    await Haptics.selectionAsync();
+    const nextTheme = isDarkMode ? "light" : "dark";
+
+    try {
+      await updateSettings({ theme: nextTheme });
+    } catch (error) {
+      console.error("Failed to toggle theme", error);
+      Alert.alert("Couldn't update theme", "Please try again in a moment.");
+    }
+  }, [isDarkMode, updateSettings]);
+
+  const handleSaveApiKey = useCallback(async () => {
+    const trimmedKey = apiKey.trim();
+    if (!trimmedKey) {
+      Alert.alert("API key required", "Paste your Google Generative AI key before saving.");
+      return;
+    }
+
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // TODO: Persist API key to secure storage & context
-    console.log("Saving API key", apiKey);
-    Alert.alert("API key saved", "You're ready to generate AI travel itineraries.");
-  };
+
+    try {
+      await updateSettings({ aiApiKey: trimmedKey });
+      Alert.alert("API key saved", "You're ready to generate AI travel itineraries.");
+    } catch (error) {
+      console.error("Failed to save settings", error);
+      Alert.alert("Couldn't save API key", "Please double-check the value and try again.");
+    }
+  }, [apiKey, updateSettings]);
 
   const handleClearData = async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -83,12 +111,6 @@ const Settings = () => {
       Alert.alert("Something went wrong", "Could not open the requested link. Please try again later.");
     });
   };
-
-  const apiKeyMasked = useMemo(() => {
-    if (!apiKey) return "";
-    if (showApiKey) return apiKey;
-    return `${apiKey.slice(0, 4)}••••••${apiKey.slice(-4)}`;
-  }, [apiKey, showApiKey]);
 
   return (
     <SafeAreaView className="flex-1 bg-secondary-50">
@@ -126,7 +148,7 @@ const Settings = () => {
               <View className="flex-row items-center gap-3 px-4 py-3 mt-2 bg-white border rounded-2xl border-primary-500/30">
                 <Ionicons name="key-outline" size={20} color="#2563eb" />
                 <TextInput
-                  value={showApiKey ? apiKey : apiKeyMasked}
+                  value={apiKey}
                   onChangeText={setApiKey}
                   placeholder="AIza..."
                   autoCapitalize="none"
@@ -135,24 +157,28 @@ const Settings = () => {
                   secureTextEntry={!showApiKey}
                   className="flex-1 text-base text-primary-900 h-7"
                 />
-                <Pressable onPress={async () => {
-                  await Haptics.selectionAsync();
-                  setShowApiKey((prev) => !prev);
-                }}>
+                <Pressable
+                  onPress={async () => {
+                    await Haptics.selectionAsync();
+                    setShowApiKey((prev) => !prev);
+                  }}
+                >
                   <Ionicons name={showApiKey ? "eye-off-outline" : "eye-outline"} size={20} color="#475569" />
                 </Pressable>
               </View>
 
               <Pressable
                 onPress={handleSaveApiKey}
-                disabled={!apiKey.trim()}
+                disabled={!apiKey.trim() || saving}
                 className={`mt-4 flex-row items-center justify-center gap-2 rounded-full px-5 py-3 ${
-                  apiKey.trim() ? "bg-primary-600" : "bg-primary-500/40"
+                  apiKey.trim() && !saving ? "bg-primary-600" : "bg-primary-500/40"
                 }`}
               >
                 <Ionicons name="cloud-upload-outline" size={18} color="white" />
-                <Text className={`text-sm font-semibold text-white ${apiKey.trim() ? "opacity-100" : "opacity-75"}`}>
-                  Save API key
+                <Text
+                  className={`text-sm font-semibold text-white ${apiKey.trim() && !saving ? "opacity-100" : "opacity-75"}`}
+                >
+                  {saving ? "Saving..." : "Save API key"}
                 </Text>
               </Pressable>
             </View>
@@ -166,7 +192,12 @@ const Settings = () => {
                 Switch between light and dark to match your environment.
               </Text>
               </View>
-              <Switch value={isDarkMode} onValueChange={handleToggleTheme} thumbColor={isDarkMode ? "#2563eb" : "#e2e8f0"} />
+              <Switch
+                value={isDarkMode ?? false}
+                onValueChange={handleToggleTheme}
+                thumbColor={isDarkMode ? "#2563eb" : "#e2e8f0"}
+                disabled={saving}
+              />
             </View>
             </View>
 

@@ -1,49 +1,29 @@
 import "@/global.css";
-import type { StoredSettings } from "@/hooks/useSettingsStorage";
-import { asyncStorageService, storageKeys } from "@/services/asyncStorage";
-import { Stack, useRouter } from "expo-router";
-import { useEffect } from "react";
 
-export default function RootLayout() {
+import { SettingsProvider, useSettingsContext } from "@/context/SettingsContext";
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
+
+const RootNavigator = () => {
   const router = useRouter();
+  const { loading, shouldShowOnboarding } = useSettingsContext();
+  const previousTargetRef = useRef<string | null>(null);
 
   useEffect(() => {
-    let isActive = true;
+    if (loading) {
+      return;
+    }
 
-    const bootstrap = async () => {
-      try {
-        const settings = await asyncStorageService.getItem<StoredSettings>(
-          storageKeys.settings
-        );
-        if (!isActive) {
-          console.log("Component unmounted, aborting navigation");
-          return;
-        }
+    const targetRoute = shouldShowOnboarding ? "/onboardingScreen" : "/home";
 
-        console.log("Loaded settings:", settings);
-        const shouldShowOnboarding = settings?.showOnboarding ?? true;
-        if (shouldShowOnboarding) {
-          console.log("Navigating to onboarding screen");
-          router.replace("/onboardingScreen");
-        } else {
-          console.log("Navigating to home screen");
-          router.replace("/home");
-        }
-      } catch {
-        console.error("[layout] Failed to load settings");
-        if (isActive) {
-          console.log("Navigating to onboarding screen");
-          router.replace("/onboardingScreen");
-        }
-      }
-    };
+    if (previousTargetRef.current === targetRoute) {
+      return;
+    }
 
-    void bootstrap();
+    previousTargetRef.current = targetRoute;
+    router.replace(targetRoute);
+  }, [loading, shouldShowOnboarding, router]);
 
-    return () => {
-      isActive = false;
-    };
-  }, [router]);
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
@@ -58,5 +38,13 @@ export default function RootLayout() {
       />
       <Stack.Screen name="onboardingScreen" />
     </Stack>
+  );
+};
+
+export default function RootLayout() {
+  return (
+    <SettingsProvider>
+      <RootNavigator />
+    </SettingsProvider>
   );
 }
