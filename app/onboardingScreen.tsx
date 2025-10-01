@@ -7,6 +7,9 @@ import React, { useCallback } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { createDefaultSettings, type StoredSettings } from "@/hooks/useSettingsStorage";
+import { asyncStorageService, storageKeys } from "@/services/asyncStorage";
+
 const FEATURE_HIGHLIGHTS = [
   {
     icon: "sparkles-outline",
@@ -28,15 +31,37 @@ const FEATURE_HIGHLIGHTS = [
 const OnboardingScreen = () => {
   const router = useRouter();
 
+  const markOnboardingComplete = useCallback(async () => {
+    try {
+      const existing = await asyncStorageService.getItem<StoredSettings>(storageKeys.settings, {
+        fallback: createDefaultSettings(),
+      });
+
+      const baseSettings = existing ?? createDefaultSettings();
+
+      const nextSettings: StoredSettings = {
+        ...baseSettings,
+        showOnboarding: false,
+        lastUpdatedAt: new Date().toISOString(),
+      };
+
+      await asyncStorageService.setItem(storageKeys.settings, nextSettings);
+    } catch (error) {
+      console.error("[onboarding] Failed to mark onboarding complete", error);
+    }
+  }, []);
+
   const handleGetStarted = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await markOnboardingComplete();
     router.push("/userProfileModal");
-  }, [router]);
+  }, [markOnboardingComplete, router]);
 
   const handleSkip = useCallback(async () => {
     await Haptics.selectionAsync();
-    router.replace("/home");
-  }, [router]);
+    await markOnboardingComplete();
+    router.replace("/(tabs)/home");
+  }, [markOnboardingComplete, router]);
 
   return (
     <SafeAreaView className="flex-1 bg-primary-900">

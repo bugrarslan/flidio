@@ -161,7 +161,7 @@ const Settings = () => {
             <View className="p-6 shadow-lg rounded-3xl bg-white/80 shadow-primary-900/5">
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
-              <Text className="text-lg font-semibold text-primary-900">Theme preferences</Text>
+              <Text className="text-lg font-semibold text-primary-900">Dark Theme</Text>
               <Text className="flex-shrink mt-1 text-sm text-secondary-500">
                 Switch between light and dark to match your environment.
               </Text>
