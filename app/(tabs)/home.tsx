@@ -3,15 +3,20 @@ import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import React from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { getAllTravels, type TravelRecord } from "@/services/databaseService";
 
 const Home = () => {
   const router = useRouter();
   const { profile } = useUserProfileContext();
   const { settings } = useSettingsContext();
+  const [travels, setTravels] = useState<TravelRecord[]>([]);
+  const [isLoadingTravels, setIsLoadingTravels] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const isDarkMode = settings?.theme === "dark";
   const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
@@ -31,10 +36,81 @@ const Home = () => {
   const tipHeadingClass = isDarkMode ? "text-text-primary-dark" : "text-white";
   const tipBodyClass = isDarkMode ? "text-text-secondary-dark" : "text-primary-50/90";
   const tipLinkTextClass = isDarkMode ? "text-text-primary-dark" : "text-primary-50";
+  const travelCardClass = isDarkMode
+    ? "bg-card-dark border border-border-dark"
+    : "bg-card-light border border-border-light";
+  const travelMetaTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
+
+  const fetchTravels = useCallback(async () => {
+    try {
+      setIsLoadingTravels(true);
+      setLoadError(null);
+      const records = await getAllTravels();
+      setTravels(records);
+    } catch (error) {
+      console.error("Failed to load travels", error);
+      setLoadError(error instanceof Error ? error.message : "Unable to load travels");
+    } finally {
+      setIsLoadingTravels(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTravels();
+    }, [fetchTravels])
+  );
 
   const handleCreateTrip = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push("/createTravelModal");
+  };
+
+  const handleOpenTravel = async (travelId: number) => {
+    await Haptics.selectionAsync();
+    router.push({
+      pathname: "/travel/[id]",
+      params: { id: String(travelId) },
+    });
+  };
+
+  const handleRetryLoadTravels = async () => {
+    await Haptics.selectionAsync();
+    fetchTravels();
+  };
+
+  const travelList = useMemo(() => travels.slice(0, 3), [travels]);
+
+  const getDateRangeLabel = (travel: TravelRecord): string => {
+    if (travel.startDate && travel.endDate) {
+      return `${travel.startDate} → ${travel.endDate}`;
+    }
+    if (travel.startDate) {
+      return `Starting ${travel.startDate}`;
+    }
+    return "Flexible dates";
+  };
+
+  const getTravelersLabel = (travel: TravelRecord): string => {
+    if (!travel.travellers) {
+      return "Group size tbd";
+    }
+    const count = Number(travel.travellers);
+    if (Number.isFinite(count)) {
+      return `${count} ${count === 1 ? "traveler" : "travelers"}`;
+    }
+    return travel.travellers;
+  };
+
+  const getBudgetLabel = (travel: TravelRecord): string | null => {
+    if (!travel.budget) {
+      return null;
+    }
+    const numericBudget = Number(travel.budget);
+    if (Number.isFinite(numericBudget)) {
+      return `$${numericBudget.toLocaleString()}`;
+    }
+    return travel.budget;
   };
 
   return (
@@ -94,33 +170,127 @@ const Home = () => {
             </Pressable>
           </View>
 
-          <View className={`p-6 mt-4 border rounded-3xl ${cardClass}`}>
-            <View className="flex-row items-start gap-4">
-              <View
-                className={`p-4 rounded-2xl ${isDarkMode ? "bg-primary-600/15" : "bg-primary-600/10"}`}
-              >
-                <Ionicons name="airplane-outline" size={28} color={iconAccentColor} />
+          <View className="mt-4">
+            {isLoadingTravels ? (
+              <View className={`p-6 rounded-3xl ${cardClass}`}>
+                <Text className={`text-sm ${bodyTextClass}`}>Loading your journeys...</Text>
               </View>
-              <View className="flex-1">
-                <Text className={`text-base font-semibold ${headingTextClass}`}>
-                  No trips yet
+            ) : loadError ? (
+              <View className={`p-6 rounded-3xl ${cardClass}`}>
+                <Text className={`text-sm ${bodyTextClass}`}>
+                  We couldn&apos;t load your saved trips.
                 </Text>
-                <Text className={`mt-1 text-sm ${bodyTextClass}`}>
-                  Create your first itinerary and it will appear right here
-                  ready for takeoff.
-                </Text>
+                <Pressable
+                  onPress={handleRetryLoadTravels}
+                  className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-4 border rounded-full ${secondaryButtonClass}`}
+                >
+                  <Ionicons name="refresh" size={18} color={iconAccentColor} />
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Try again</Text>
+                </Pressable>
               </View>
-            </View>
+            ) : travelList.length === 0 ? (
+              <View className={`p-6 border rounded-3xl ${cardClass}`}>
+                <View className="flex-row items-start gap-4">
+                  <View
+                    className={`p-4 rounded-2xl ${isDarkMode ? "bg-primary-600/15" : "bg-primary-600/10"}`}
+                  >
+                    <Ionicons name="airplane-outline" size={28} color={iconAccentColor} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className={`text-base font-semibold ${headingTextClass}`}>
+                      No trips yet
+                    </Text>
+                    <Text className={`mt-1 text-sm ${bodyTextClass}`}>
+                      Create your first itinerary and it will appear right here ready for takeoff.
+                    </Text>
+                  </View>
+                </View>
 
-            <Pressable
-              onPress={handleCreateTrip}
-              className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-5 border rounded-full ${secondaryButtonClass}`}
-            >
-              <Ionicons name="sparkles-outline" size={18} color={iconAccentColor} />
-              <Text className={`text-sm font-semibold ${accentTextClass}`}>
-                Generate an itinerary
-              </Text>
-            </Pressable>
+                <Pressable
+                  onPress={handleCreateTrip}
+                  className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-5 border rounded-full ${secondaryButtonClass}`}
+                >
+                  <Ionicons name="sparkles-outline" size={18} color={iconAccentColor} />
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                    Generate an itinerary
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View className="gap-4">
+                {travelList.map((travel) => {
+                  const budgetLabel = getBudgetLabel(travel);
+                  const createdAtDate = travel.createdAt ? new Date(travel.createdAt) : null;
+                  const createdAtLabel =
+                    createdAtDate && !Number.isNaN(createdAtDate.getTime())
+                      ? createdAtDate.toLocaleDateString()
+                      : travel.createdAt ?? "";
+                  return (
+                    <Pressable
+                      key={travel.id}
+                      onPress={() => handleOpenTravel(travel.id)}
+                      className={`p-5 rounded-3xl ${travelCardClass}`}
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-1 pr-3">
+                          <Text className={`text-base font-semibold ${headingTextClass}`} numberOfLines={1}>
+                            {travel.title}
+                          </Text>
+                          <Text className={`mt-1 text-sm ${accentTextClass}`} numberOfLines={1}>
+                            {travel.departure} → {travel.destination}
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={iconAccentColor} />
+                      </View>
+
+                      <View className="flex-row flex-wrap items-center mt-4 gap-x-4 gap-y-2">
+                        <View className="flex-row items-center gap-2">
+                          <Ionicons name="calendar-outline" size={16} color={iconAccentColor} />
+                          <Text className={`text-xs ${travelMetaTextClass}`}>
+                            {getDateRangeLabel(travel)}
+                          </Text>
+                        </View>
+
+                        <View className="flex-row items-center gap-2">
+                          <Ionicons name="people-outline" size={16} color={iconAccentColor} />
+                          <Text className={`text-xs ${travelMetaTextClass}`}>
+                            {getTravelersLabel(travel)}
+                          </Text>
+                        </View>
+
+                        {budgetLabel && (
+                          <View className="flex-row items-center gap-2">
+                            <Ionicons name="cash-outline" size={16} color={iconAccentColor} />
+                            <Text className={`text-xs ${travelMetaTextClass}`}>{budgetLabel}</Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {createdAtLabel ? (
+                        <Text className={`mt-3 text-[11px] uppercase tracking-[0.2em] ${travelMetaTextClass}`}>
+                          Saved {createdAtLabel}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+
+                {travels.length > travelList.length && (
+                  <Pressable
+                    onPress={async () => {
+                      await Haptics.selectionAsync();
+                      // TODO: implement travels archive screen
+                    }}
+                    className={`flex-row items-center justify-center gap-2 px-4 py-3 border rounded-full ${secondaryButtonClass}`}
+                  >
+                    <Ionicons name="map-outline" size={18} color={iconAccentColor} />
+                    <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                      View all saved itineraries
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
           </View>
         </View>
 
