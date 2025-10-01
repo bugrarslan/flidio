@@ -29,8 +29,7 @@ const FEATURE_HIGHLIGHTS = [
 
 const OnboardingScreen = () => {
   const router = useRouter();
-  const { updateSettings } = useSettingsContext();
-  const { settings } = useSettingsContext();
+  const { updateSettings, settings } = useSettingsContext();
 
   const isDarkMode = settings?.theme === "dark";
   const backgroundClass = isDarkMode ? "bg-background-dark" : "bg-primary-900";
@@ -47,25 +46,25 @@ const OnboardingScreen = () => {
   const primaryButtonIconColor = isDarkMode ? "#2563eb" : "#2563eb";
   const secondaryButtonTextClass = isDarkMode ? "text-accent-text-muted-dark" : "text-secondary-50/90";
 
-  const markOnboardingComplete = useCallback(async () => {
+  const handleGetStarted = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // try {
+    //   await updateSettings({ showOnboarding: false });
+    // } catch (error) {
+    //   console.error("[onboarding] Failed to mark onboarding complete", error);
+    // }
+    router.push("/userProfileModal");
+  }, [router, updateSettings]);
+
+  const handleSkip = useCallback(async () => {
+    await Haptics.selectionAsync();
     try {
       await updateSettings({ showOnboarding: false });
     } catch (error) {
       console.error("[onboarding] Failed to mark onboarding complete", error);
     }
-  }, [updateSettings]);
-
-  const handleGetStarted = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // await markOnboardingComplete();
-    router.push("/userProfileModal");
-  }, [markOnboardingComplete, router]);
-
-  const handleSkip = useCallback(async () => {
-    await Haptics.selectionAsync();
-    await markOnboardingComplete();
     router.replace("/(tabs)/home");
-  }, [markOnboardingComplete, router]);
+  }, [router, updateSettings]);
 
   return (
     <SafeAreaView className={`flex-1 ${backgroundClass}`}>

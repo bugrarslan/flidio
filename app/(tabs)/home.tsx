@@ -1,6 +1,7 @@
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
+import { generateResponse } from "@/services/aiService";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -34,7 +35,8 @@ const Home = () => {
 
   const handleCreateTrip = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/createTravelModal");
+    await generateResponse();
+    // router.push("/createTravelModal");
   };
 
   return (
