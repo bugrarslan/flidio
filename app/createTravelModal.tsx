@@ -1,6 +1,8 @@
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
+import { generateResponse } from "@/services/aiService";
+import { formatPrompt } from "@/utils/formatPrompt";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -39,6 +41,7 @@ const CreateTravelModal = () => {
   const [travelers, setTravelers] = useState("1");
   const [notes, setNotes] = useState("");
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const isDarkMode = settings?.theme === "dark";
   const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
@@ -92,17 +95,43 @@ const CreateTravelModal = () => {
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
-    // TODO: Connect to AI service + SQLite persistence once data layer is in place
-    console.log("Generating itinerary", {
+    const normalizedBudget = budget ? Number(budget) : null;
+    const normalizedTravelers = travelers ? Number(travelers) : null;
+
+    const prompt = formatPrompt({
       title,
+      departure: profile?.location ?? "",
       destination,
       startDate,
       endDate,
-      budget: budget ? Number(budget) : null,
-      travelers: travelers ? Number(travelers) : 1,
-      notes,
-      selectedVibes,
+      budget: normalizedBudget,
+      travellersCount: normalizedTravelers,
+      tripVibes: selectedVibes,
+      userNotes: notes,
+      userCredentials: {
+        name: profile?.name ?? "",
+        age: profile?.age ?? null,
+        location: profile?.location ?? "",
+        travelStyles: profile?.travelStyles ?? [],
+        bio: profile?.bio ?? "",
+      },
     });
+
+    console.log("Prompt generated for AI:", prompt);
+
+    try {
+      setIsGenerating(true);
+      const aiResponse = await generateResponse(prompt);
+      console.log("AI itinerary response:", aiResponse);
+    } catch (error) {
+      console.error("Failed to generate itinerary:", error);
+      Alert.alert(
+        "Couldn't generate itinerary",
+        "Please check your connection and try again."
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCloseModal = async () => {
@@ -316,15 +345,17 @@ const CreateTravelModal = () => {
             <Pressable
               onPress={handleGenerateItinerary}
               className={`flex-row items-center justify-center gap-2 rounded-full px-6 py-4 ${
-                isFormValid ? "bg-primary-600" : "bg-primary-500/40"
+                isFormValid && !isGenerating ? "bg-primary-600" : "bg-primary-500/40"
               }`}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isGenerating}
             >
               <Ionicons name="sparkles" size={20} color="white" />
               <Text
-                className={`text-base font-semibold text-white ${isFormValid ? "opacity-100" : "opacity-70"}`}
+                className={`text-base font-semibold text-white ${
+                  isFormValid && !isGenerating ? "opacity-100" : "opacity-70"
+                }`}
               >
-                Generate itinerary with AI
+                {isGenerating ? "Generating..." : "Generate itinerary with AI"}
               </Text>
             </Pressable>
 
