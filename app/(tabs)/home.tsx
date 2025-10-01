@@ -1,3 +1,4 @@
+import { useUserProfileContext } from "@/context/UserProfileContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -7,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const Home = () => {
   const router = useRouter();
+  const { profile } = useUserProfileContext();
 
   const handleCreateTrip = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -23,7 +25,7 @@ const Home = () => {
       <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 50 }}>
         <View className="pt-10">
           <Text className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600/80">
-            Welcome back
+            Welcome back{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}!
           </Text>
           <Text className="mt-2 text-3xl font-bold text-primary-900">
             Ready for your next escape?

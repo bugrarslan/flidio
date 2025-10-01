@@ -1,6 +1,7 @@
 import "@/global.css";
 
 import { SettingsProvider, useSettingsContext } from "@/context/SettingsContext";
+import { UserProfileProvider } from "@/context/UserProfileContext";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 
@@ -44,7 +45,9 @@ const RootNavigator = () => {
 export default function RootLayout() {
   return (
     <SettingsProvider>
-      <RootNavigator />
+      <UserProfileProvider>
+        <RootNavigator />
+      </UserProfileProvider>
     </SettingsProvider>
   );
 }

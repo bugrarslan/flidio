@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { useUserProfileContext } from "@/context/UserProfileContext";
 
 const TRAVEL_STYLES = [
   "City breaks",
@@ -32,12 +34,26 @@ const BUDGET_LEVELS = [
 
 const UserProfileModal = () => {
   const router = useRouter();
+  const { profile, saveProfile, saving } = useUserProfileContext();
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [travelStyles, setTravelStyles] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!profile) {
+      return;
+    }
+
+    setName(profile.name ?? "");
+    setLocation(profile.location ?? "");
+    setBio(profile.bio ?? "");
+    setSelectedBudget(profile.selectedBudget ?? null);
+    setTravelStyles(profile.travelStyles ?? []);
+    setAge(profile.age !== undefined && profile.age !== null ? String(profile.age) : "");
+  }, [profile]);
 
   const isFormValid = useMemo(() => {
     return name.trim().length > 1 && location.trim().length > 1;
@@ -63,17 +79,20 @@ const UserProfileModal = () => {
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // TODO: Persist profile using SQLite + context once data layer is ready
-    console.log("User profile", {
-      name,
-      age: age ? Number(age) : null,
-      location,
-      bio,
-      selectedBudget,
-      travelStyles,
-    });
-
-    router.replace("/(tabs)/home");
+    try {
+      await saveProfile({
+        name: name.trim(),
+        location: location.trim(),
+        age: age ? Number(age) : undefined,
+        bio,
+        selectedBudget: selectedBudget ?? undefined,
+        travelStyles,
+      });
+      router.replace("/(tabs)/home");
+    } catch (error) {
+      console.error("[profile] Failed to save user profile", error);
+      Alert.alert("Couldn't save profile", "Please try again in a moment.");
+    }
   };
 
   const handleSkip = async () => {
@@ -283,15 +302,17 @@ const UserProfileModal = () => {
             <Pressable
               onPress={handleSaveProfile}
               className={`flex-row items-center justify-center gap-2 rounded-full px-6 py-4 ${
-                isFormValid ? "bg-primary-600" : "bg-primary-500/40"
+                isFormValid && !saving ? "bg-primary-600" : "bg-primary-500/40"
               }`}
-              disabled={!isFormValid}
+              disabled={!isFormValid || saving}
             >
               <Ionicons name="sparkles" size={20} color="white" />
               <Text
-                className={`text-base font-semibold text-white ${isFormValid ? "opacity-100" : "opacity-70"}`}
+                className={`text-base font-semibold text-white ${
+                  isFormValid && !saving ? "opacity-100" : "opacity-70"
+                }`}
               >
-                Save my profile
+                {saving ? "Saving..." : "Save my profile"}
               </Text>
             </Pressable>
 
