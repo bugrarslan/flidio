@@ -138,12 +138,16 @@ CREATE TABLE users (
 CREATE TABLE travels (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
+  departure TEXT NOT NULL,
   destination TEXT NOT NULL,
   start_date TEXT,
-  end_date TEXT,
-  budget REAL,
+  end_date TEXT,d
+  budget TEXT,
+  travellers TEXT,
+  trip_vibes TEXT,
+  notes TEXT,
+  user_credentials TEXT,
   itinerary TEXT, -- JSON string from AI
-  user_input TEXT, -- Original user requirements
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -46,33 +46,19 @@ const UserProfileModal = () => {
   const [travelStyles, setTravelStyles] = useState<string[]>([]);
 
   const isDarkMode = settings?.theme === "dark";
-  const screenBackgroundClass = isDarkMode
-    ? "bg-background-dark"
-    : "bg-background-light";
-  const headingTextClass = isDarkMode
-    ? "text-text-primary-dark"
-    : "text-text-primary-light";
-  const bodyTextClass = isDarkMode
-    ? "text-text-secondary-dark"
-    : "text-text-secondary-light";
-  const accentTextClass = isDarkMode
-    ? "text-accent-text-dark"
-    : "text-accent-text-light";
-  const labelTextClass = isDarkMode
-    ? "text-text-secondary-dark"
-    : "text-secondary-600";
+  const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
+  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
+  const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
+  const accentTextClass = isDarkMode ? "text-accent-text-dark" : "text-accent-text-light";
+  const labelTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
   const cardClass = isDarkMode
     ? "bg-card-dark border border-border-dark"
     : "bg-card-light border border-border-light";
-  const cardShadowClass = isDarkMode
-    ? "shadow-xl shadow-primary-900/20"
-    : "shadow-lg shadow-primary-900/5";
+  const cardShadowClass = isDarkMode ? "shadow-xl shadow-primary-900/20" : "shadow-lg shadow-primary-900/5";
   const inputContainerClass = isDarkMode
     ? "bg-input-background-dark border border-border-dark"
     : "bg-input-background-light border border-border-light";
-  const inputTextClass = isDarkMode
-    ? "text-text-primary-dark"
-    : "text-text-primary-light";
+  const inputTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
   const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
   const iconPrimaryColor = isDarkMode ? "#93c5fd" : "#2563eb";
   const iconSecondaryColor = isDarkMode ? "#cbd5f5" : "#475569";
@@ -82,9 +68,7 @@ const UserProfileModal = () => {
   const chipInactiveContainerClass = isDarkMode
     ? "border-border-dark bg-card-dark"
     : "border-primary-500/20 bg-white";
-  const chipInactiveTextClass = isDarkMode
-    ? "text-text-secondary-dark"
-    : "text-secondary-600";
+  const chipInactiveTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
 
   useEffect(() => {
     if (!profile) {
@@ -96,11 +80,7 @@ const UserProfileModal = () => {
     setBio(profile.bio ?? "");
     setSelectedBudget(profile.selectedBudget ?? null);
     setTravelStyles(profile.travelStyles ?? []);
-    setAge(
-      profile.age !== undefined && profile.age !== null
-        ? String(profile.age)
-        : ""
-    );
+    setAge(profile.age !== undefined && profile.age !== null ? String(profile.age) : "");
   }, [profile]);
 
   const isFormValid = useMemo(() => {
@@ -145,16 +125,16 @@ const UserProfileModal = () => {
   };
 
   const markOnboardingComplete = useCallback(async () => {
-    try {
-      await updateSettings({ showOnboarding: false });
-    } catch (error) {
-      console.error("[onboarding] Failed to mark onboarding complete", error);
-    }
-  }, [updateSettings]);
+      try {
+        await updateSettings({ showOnboarding: false });
+      } catch (error) {
+        console.error("[onboarding] Failed to mark onboarding complete", error);
+      }
+    }, [updateSettings]);
 
   const handleSkip = async () => {
     await Haptics.selectionAsync();
-    await markOnboardingComplete();
+      await markOnboardingComplete();
     router.replace("/(tabs)/home");
   };
 
@@ -179,14 +159,10 @@ const UserProfileModal = () => {
             className="flex-row items-center gap-2"
           >
             <Ionicons name="chevron-back" size={22} color={iconPrimaryColor} />
-            <Text className={`text-base font-medium ${headingTextClass}`}>
-              Back
-            </Text>
+            <Text className={`text-base font-medium ${headingTextClass}`}>Back</Text>
           </Pressable>
           <Pressable onPress={handleSkip}>
-            <Text
-              className={`text-sm font-semibold uppercase ${accentTextClass}`}
-            >
+            <Text className={`text-sm font-semibold uppercase ${accentTextClass}`}>
               Skip for now
             </Text>
           </Pressable>
@@ -197,18 +173,10 @@ const UserProfileModal = () => {
           contentContainerStyle={{ paddingBottom: 36 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View
-            className={`p-6 mt-8 rounded-3xl ${cardClass} ${cardShadowClass}`}
-          >
+          <View className={`p-6 mt-8 rounded-3xl ${cardClass} ${cardShadowClass}`}>
             <View className="flex-row items-center gap-4">
-              <View
-                className={`p-4 rounded-full ${isDarkMode ? "bg-primary-600/20" : "bg-primary-500/20"}`}
-              >
-                <Ionicons
-                  name="person-outline"
-                  size={28}
-                  color={iconPrimaryColor}
-                />
+              <View className={`p-4 rounded-full ${isDarkMode ? "bg-primary-600/20" : "bg-primary-500/20"}`}>
+                <Ionicons name="person-outline" size={28} color={iconPrimaryColor} />
               </View>
               <View className="flex-1">
                 <Text className={`text-2xl font-semibold ${headingTextClass}`}>
@@ -223,19 +191,11 @@ const UserProfileModal = () => {
 
             <View className="gap-4 mt-6 space-y-5">
               <View>
-                <Text
-                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
-                >
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Full name
                 </Text>
-                <View
-                  className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
-                >
-                  <Ionicons
-                    name="id-card-outline"
-                    size={20}
-                    color={iconPrimaryColor}
-                  />
+                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                  <Ionicons name="id-card-outline" size={20} color={iconPrimaryColor} />
                   <TextInput
                     value={name}
                     onChangeText={setName}
@@ -248,19 +208,11 @@ const UserProfileModal = () => {
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text
-                    className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
-                  >
+                  <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     Age
                   </Text>
-                  <View
-                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
-                  >
-                    <Ionicons
-                      name="calendar-outline"
-                      size={20}
-                      color={iconPrimaryColor}
-                    />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                    <Ionicons name="calendar-outline" size={20} color={iconPrimaryColor} />
                     <TextInput
                       value={age}
                       onChangeText={(value) => {
@@ -276,19 +228,11 @@ const UserProfileModal = () => {
                   </View>
                 </View>
                 <View className="flex-1">
-                  <Text
-                    className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
-                  >
+                  <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     Home base
                   </Text>
-                  <View
-                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
-                  >
-                    <Ionicons
-                      name="navigate-outline"
-                      size={20}
-                      color={iconPrimaryColor}
-                    />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                    <Ionicons name="navigate-outline" size={20} color={iconPrimaryColor} />
                     <TextInput
                       value={location}
                       onChangeText={setLocation}
@@ -301,9 +245,7 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text
-                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
-                >
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Budget preference
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -316,17 +258,13 @@ const UserProfileModal = () => {
                           setSelectedBudget(isSelected ? null : budget.label)
                         }
                         className={`flex-row items-center gap-2 rounded-full border px-4 py-2 ${
-                          isSelected
-                            ? chipActiveContainerClass
-                            : chipInactiveContainerClass
+                          isSelected ? chipActiveContainerClass : chipInactiveContainerClass
                         }`}
                       >
                         <Ionicons
                           name={budget.icon as keyof typeof Ionicons.glyphMap}
                           size={18}
-                          color={
-                            isSelected ? iconPrimaryColor : iconSecondaryColor
-                          }
+                          color={isSelected ? iconPrimaryColor : iconSecondaryColor}
                         />
                         <Text
                           className={`text-sm font-medium ${
@@ -342,9 +280,7 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text
-                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
-                >
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Travel styles
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -355,9 +291,7 @@ const UserProfileModal = () => {
                         key={style}
                         onPress={() => toggleStyle(style)}
                         className={`rounded-full border px-4 py-2 ${
-                          isActive
-                            ? chipActiveContainerClass
-                            : chipInactiveContainerClass
+                          isActive ? chipActiveContainerClass : chipInactiveContainerClass
                         }`}
                       >
                         <Text
@@ -374,14 +308,10 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text
-                  className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}
-                >
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
                   Trip wishlist
                 </Text>
-                <View
-                  className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
-                >
+                <View className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
                   <TextInput
                     value={bio}
                     onChangeText={setBio}

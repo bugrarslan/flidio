@@ -2,18 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 
 const MODEL_NAME = "gemini-flash-latest";
 
-const SYSTEM_PROMPT = `you are a professional travel planner.`;
+const SYSTEM_PROMPT = `You are a professional travel itinerary generator.`;
 
 const BASE_PROMPT = ``;
-
-export interface TravelItineraryDay {
-  day: number;
-  activities: Array<{ time: string; activity: string }>;
-}
-
-export interface TravelItineraryResponse {
-  itinerary: TravelItineraryDay[];
-}
 
 function getApiKey(): string {
   const apiKey =

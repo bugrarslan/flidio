@@ -1,5 +1,6 @@
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
+import { useUserProfileContext } from "@/context/UserProfileContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -28,6 +29,7 @@ const TRIP_VIBES = [
 const CreateTravelModal = () => {
   const router = useRouter();
   const { settings } = useSettingsContext();
+  const { profile } = useUserProfileContext();
 
   const [title, setTitle] = useState("");
   const [destination, setDestination] = useState("");
