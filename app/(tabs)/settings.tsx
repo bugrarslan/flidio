@@ -16,6 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
+import { useUserProfileContext } from "@/context/UserProfileContext";
+import { resetTravelDatabase } from "@/services/databaseService";
 
 const SUPPORT_LINKS = [
   {
@@ -36,7 +38,8 @@ const SUPPORT_LINKS = [
 ] as const;
 
 const Settings = () => {
-  const { settings, updateSettings, saving } = useSettingsContext();
+  const { settings, updateSettings, saving, clearSettings } = useSettingsContext();
+  const { clearProfile } = useUserProfileContext();
 
   const isDarkMode = settings?.theme === "dark";
 
@@ -50,6 +53,8 @@ const Settings = () => {
   const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
   const iconAccentColor = isDarkMode ? "#60a5fa" : "#2563eb";
   const iconMutedColor = isDarkMode ? "#94a3b8" : "#475569";
+  const iconDangerColor = isDarkMode ? "#f87171" : "#dc2626";
+  const iconDangerBgClass = isDarkMode ? "bg-red-500/20" : "bg-red-500/10";
   const switchTrackColors = isDarkMode
     ? { false: "#1f2937", true: "#2563eb" }
     : { false: "#cbd5f5", true: "#2563eb" };
@@ -57,7 +62,8 @@ const Settings = () => {
 
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [confirmingClear, setConfirmingClear] = useState(false);
+  type DataAction = "profile-settings" | "itineraries" | "all";
+  const [pendingAction, setPendingAction] = useState<DataAction | null>(null);
 
   const appVersion = useMemo(() => {
     return Constants.expoConfig?.version ?? "1.0.0";
@@ -99,27 +105,108 @@ const Settings = () => {
     }
   }, [apiKey, updateSettings]);
 
-  const handleClearData = async () => {
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    setConfirmingClear(true);
+  const executeDataAction = useCallback(
+    async (
+      key: DataAction,
+      action: () => Promise<void>,
+      success: { title: string; message: string }
+    ) => {
+      setPendingAction(key);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
+      try {
+        await action();
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(success.title, success.message);
+      } catch (error) {
+        console.error(`[settings] Failed to execute ${key} data action`, error);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert("Couldn't complete action", "Please try again in a moment.");
+      } finally {
+        setPendingAction(null);
+      }
+    },
+    []
+  );
+
+  const confirmClearProfileSettings = useCallback(() => {
+    void Haptics.selectionAsync();
     Alert.alert(
-      "Clear all data",
-      "This removes your profile and travel plans stored on this device.",
+      "Clear profile & settings?",
+      "This removes your saved traveler profile and resets app preferences stored on this device.",
       [
-        { text: "Cancel", style: "cancel", onPress: () => setConfirmingClear(false) },
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Erase",
+          text: "Clear",
           style: "destructive",
-          onPress: async () => {
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            setConfirmingClear(false);
-            // TODO: Wire up SQLite + context reset once data layer is ready
-            console.log("Clearing local data");
-          },
+          onPress: () =>
+            void executeDataAction(
+              "profile-settings",
+              async () => {
+                await Promise.all([clearProfile(), clearSettings()]);
+              },
+              {
+                title: "Profile & settings cleared",
+                message: "Your traveler profile and app preferences have been reset.",
+              }
+            ),
         },
       ]
     );
-  };
+  }, [clearProfile, clearSettings, executeDataAction]);
+
+  const confirmDeleteItineraries = useCallback(() => {
+    void Haptics.selectionAsync();
+    Alert.alert(
+      "Delete all itineraries?",
+      "This deletes the Flidio travel database and every saved trip on this device.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            void executeDataAction(
+              "itineraries",
+              async () => {
+                await resetTravelDatabase();
+              },
+              {
+                title: "Itineraries deleted",
+                message: "All saved itineraries have been removed from this device.",
+              }
+            ),
+        },
+      ]
+    );
+  }, [executeDataAction]);
+
+  const confirmClearAllData = useCallback(() => {
+    void Haptics.selectionAsync();
+    Alert.alert(
+      "Clear every trace?",
+      "This removes your profile, settings, and all saved itineraries from this device.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Erase everything",
+          style: "destructive",
+          onPress: () =>
+            void executeDataAction(
+              "all",
+              async () => {
+                await Promise.all([clearProfile(), clearSettings()]);
+                await resetTravelDatabase();
+              },
+              {
+                title: "All data cleared",
+                message: "Flidio has been reset. You can start fresh any time.",
+              }
+            ),
+        },
+      ]
+    );
+  }, [clearProfile, clearSettings, executeDataAction]);
 
   const handleOpenLink = async (url: string) => {
     await Haptics.selectionAsync();
@@ -230,25 +317,102 @@ const Settings = () => {
               Manage the travel plans and profile details stored locally on this device.
             </Text>
 
-            <Pressable
-              onPress={handleClearData}
-              className={`mt-5 flex-row items-center justify-between rounded-2xl border px-4 py-3 ${
-                confirmingClear ? "border-red-500 bg-red-500/10" : cardClass
-              }`}
-            >
-              <View className="flex-row items-center flex-1 gap-3">
-              <View className="p-3 rounded-full bg-red-500/15">
-                <Ionicons name="trash-outline" size={20} color="#ef4444" />
-              </View>
-              <View className="flex-1 mr-2">
-                <Text className={`text-base font-semibold ${textPrimaryClass}`}>Clear local data</Text>
-                <Text className={`text-xs ${textSecondaryClass}`}>
-                  Removes saved itineraries, profile, and settings.
-                </Text>
-              </View>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={confirmingClear ? "#ef4444" : iconMutedColor} />
-            </Pressable>
+            <View className="gap-2 mt-5 space-y-3">
+              <Pressable
+                onPress={confirmClearProfileSettings}
+                disabled={pendingAction !== null}
+                className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 ${cardClass} ${
+                  pendingAction === "profile-settings"
+                    ? isDarkMode
+                      ? "border-primary-400 bg-primary-500/10"
+                      : "border-primary-500 bg-primary-100/60"
+                    : ""
+                } ${pendingAction !== null && pendingAction !== "profile-settings" ? "opacity-60" : ""}`}
+              >
+                <View className="flex-row items-center flex-1 gap-3">
+                  <View
+                    className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/20" : "bg-primary-500/10"}`}
+                  >
+                    <Ionicons name="people-outline" size={20} color={iconAccentColor} />
+                  </View>
+                  <View className="flex-1 mr-2">
+                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                      {pendingAction === "profile-settings" ? "Clearing..." : "Clear profile & settings"}
+                    </Text>
+                    <Text className={`text-xs ${textSecondaryClass}`}>
+                      Removes saved traveler profile and app preferences.
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={pendingAction === "profile-settings" ? iconAccentColor : iconMutedColor}
+                />
+              </Pressable>
+
+              <Pressable
+                onPress={confirmDeleteItineraries}
+                disabled={pendingAction !== null}
+                className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 ${cardClass} ${
+                  pendingAction === "itineraries"
+                    ? isDarkMode
+                      ? "border-red-400 bg-red-500/15"
+                      : "border-red-500 bg-red-500/10"
+                    : ""
+                } ${pendingAction !== null && pendingAction !== "itineraries" ? "opacity-60" : ""}`}
+              >
+                <View className="flex-row items-center flex-1 gap-3">
+                  <View className={`p-3 rounded-full ${iconDangerBgClass}`}>
+                    <Ionicons name="map-outline" size={20} color={iconDangerColor} />
+                  </View>
+                  <View className="flex-1 mr-2">
+                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                      {pendingAction === "itineraries" ? "Deleting..." : "Delete itineraries"}
+                    </Text>
+                    <Text className={`text-xs ${textSecondaryClass}`}>
+                      Deletes the Flidio travel database and all saved trips.
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={pendingAction === "itineraries" ? iconDangerColor : iconMutedColor}
+                />
+              </Pressable>
+
+              <Pressable
+                onPress={confirmClearAllData}
+                disabled={pendingAction !== null}
+                className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 ${cardClass} ${
+                  pendingAction === "all"
+                    ? isDarkMode
+                      ? "border-red-500 bg-red-500/20"
+                      : "border-red-600 bg-red-500/15"
+                    : ""
+                } ${pendingAction !== null && pendingAction !== "all" ? "opacity-60" : ""}`}
+              >
+                <View className="flex-row items-center flex-1 gap-3">
+                  <View className={`p-3 rounded-full ${iconDangerBgClass}`}>
+                    <Ionicons name="trash-outline" size={20} color={iconDangerColor} />
+                  </View>
+                  <View className="flex-1 mr-2">
+                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                      {pendingAction === "all" ? "Wiping..." : "Clear all data"}
+                    </Text>
+                    <Text className={`text-xs ${textSecondaryClass}`}>
+                      Runs both actions above for a completely fresh start.
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={pendingAction === "all" ? iconDangerColor : iconMutedColor}
+                />
+              </Pressable>
+            </View>
           </View>
 
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>

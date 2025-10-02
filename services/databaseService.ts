@@ -1,4 +1,4 @@
-import { openDatabaseAsync, type SQLiteDatabase } from "expo-sqlite";
+import { deleteDatabaseAsync, openDatabaseAsync, type SQLiteDatabase } from "expo-sqlite";
 
 import type { TravelItineraryResponse } from "@/services/aiService";
 
@@ -233,5 +233,29 @@ export const deleteTravel = async (id: number): Promise<void> => {
 export const clearTravels = async (): Promise<void> => {
 	const db = await ensureDatabase();
 	await db.runAsync("DELETE FROM travels;", []);
+};
+
+export const resetTravelDatabase = async (): Promise<void> => {
+	if (databaseInstance) {
+		try {
+			await databaseInstance.closeAsync();
+		} catch (error) {
+			console.warn("[database] Failed to close database before reset", error);
+		}
+		databaseInstance = null;
+	}
+
+	if (initializing) {
+		try {
+			const pendingDb = await initializing;
+			await pendingDb.closeAsync();
+		} catch (error) {
+			console.warn("[database] Failed to close initializing database before reset", error);
+		} finally {
+			initializing = null;
+		}
+	}
+
+	await deleteDatabaseAsync(DATABASE_NAME);
 };
 
