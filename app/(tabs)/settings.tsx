@@ -64,6 +64,9 @@ const Settings = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   type DataAction = "profile-settings" | "itineraries" | "all";
   const [pendingAction, setPendingAction] = useState<DataAction | null>(null);
+  const storedApiKey = settings?.aiApiKey?.trim() ?? "";
+  const hasStoredApiKey = storedApiKey.length > 0;
+  const canRemoveApiKey = hasStoredApiKey || apiKey.trim().length > 0;
 
   const appVersion = useMemo(() => {
     return Constants.expoConfig?.version ?? "1.0.0";
@@ -104,6 +107,26 @@ const Settings = () => {
       Alert.alert("Couldn't save API key", "Please double-check the value and try again.");
     }
   }, [apiKey, updateSettings]);
+
+  const handleRemoveApiKey = useCallback(async () => {
+    if (!hasStoredApiKey && apiKey.trim().length === 0) {
+      return;
+    }
+
+    await Haptics.selectionAsync();
+
+    try {
+      setApiKey("");
+      setShowApiKey(false);
+      if (hasStoredApiKey) {
+        await updateSettings({ aiApiKey: "" });
+        Alert.alert("API key removed", "You can add a new Gemini API key at any time.");
+      }
+    } catch (error) {
+      console.error("Failed to remove API key", error);
+      Alert.alert("Couldn't remove API key", "Please try again in a moment.");
+    }
+  }, [apiKey, hasStoredApiKey, updateSettings]);
 
   const executeDataAction = useCallback(
     async (
@@ -261,11 +284,25 @@ const Settings = () => {
                   secureTextEntry={!showApiKey}
                   className={`flex-1 text-base h-7 ${textPrimaryClass}`}
                 />
+                {canRemoveApiKey ? (
+                  <Pressable
+                    onPress={() => {
+                      void handleRemoveApiKey();
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Remove API key"
+                    className={`p-1.5 rounded-full ${isDarkMode ? "bg-red-500/20" : "bg-red-500/10"}`}
+                  >
+                    <Ionicons name="close-circle" size={18} color={iconDangerColor} />
+                  </Pressable>
+                ) : null}
                 <Pressable
                   onPress={async () => {
                     await Haptics.selectionAsync();
                     setShowApiKey((prev) => !prev);
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={showApiKey ? "Hide API key" : "Show API key"}
                 >
                   <Ionicons
                     name={showApiKey ? "eye-off-outline" : "eye-outline"}
