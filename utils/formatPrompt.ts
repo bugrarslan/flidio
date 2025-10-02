@@ -5,8 +5,8 @@ INPUT DATA:
 - title: [string]
 - departure: [string]
 - destination: [string]
-- start_date: [YYYY-MM-DD]
-- end_date: [YYYY-MM-DD]
+- start_date: [DD-MM-YYYY]
+- end_date: [DD-MM-YYYY]
 - budget: [number, USD]
 - travellers_count: [number]
 - trip_vibes: ["City explorer", "Coastal chill", "Mountain retreat", "Foodie tour", "Art & culture", "Nightlife"]
@@ -27,15 +27,15 @@ OUTPUT REQUIREMENTS:
   "departure": string,
   "destination": string,
   "date_range": {
-    "start": "YYYY-MM-DD",
-    "end": "YYYY-MM-DD"
+    "start": "DD-MM-YYYY",
+    "end": "DD-MM-YYYY"
   },
   "travellers_count": number,
   "budget_usd": number,
   "itinerary": [
     {
       "day": number,
-      "date": "YYYY-MM-DD",
+      "date": "DD-MM-YYYY",
       "plan": {
         "morning": string,
         "afternoon": string,

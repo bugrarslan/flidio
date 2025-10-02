@@ -5,12 +5,14 @@ import { generateResponse, InvalidApiKeyError } from "@/services/aiService";
 import { createTravel } from "@/services/databaseService";
 import { formatPrompt } from "@/utils/formatPrompt";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -38,6 +40,12 @@ const CreateTravelModal = () => {
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [startDateValue, setStartDateValue] = useState<Date | null>(null);
+  const [endDateValue, setEndDateValue] = useState<Date | null>(null);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [startPickerDate, setStartPickerDate] = useState<Date>(new Date());
+  const [endPickerDate, setEndPickerDate] = useState<Date>(new Date());
   const [budget, setBudget] = useState("");
   const [travelers, setTravelers] = useState("1");
   const [notes, setNotes] = useState("");
@@ -70,6 +78,97 @@ const CreateTravelModal = () => {
     ? "border-border-dark bg-card-dark"
     : "border-primary-500/20 bg-white";
   const vibeInactiveTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
+
+  const formatDateValue = useMemo(() => {
+    return (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${day}-${month}-${year}`;
+    };
+  }, []);
+
+  const applyStartDate = (date: Date | null) => {
+    if (!date) {
+      setStartDateValue(null);
+      setStartDate("");
+      return;
+    }
+    setStartDateValue(date);
+    setStartDate(formatDateValue(date));
+    if (endDateValue && date > endDateValue) {
+      setEndDateValue(date);
+      setEndDate(formatDateValue(date));
+    }
+  };
+
+  const applyEndDate = (date: Date | null) => {
+    if (!date) {
+      setEndDateValue(null);
+      setEndDate("");
+      return;
+    }
+    if (startDateValue && date < startDateValue) {
+      setEndDateValue(startDateValue);
+      setEndDate(formatDateValue(startDateValue));
+      return;
+    }
+    setEndDateValue(date);
+    setEndDate(formatDateValue(date));
+  };
+
+  const openStartPicker = async () => {
+    await Haptics.selectionAsync();
+    setStartPickerDate(startDateValue ?? new Date());
+    setShowStartPicker(true);
+  };
+
+  const openEndPicker = async () => {
+    await Haptics.selectionAsync();
+    const baseDate = endDateValue ?? startDateValue ?? new Date();
+    setEndPickerDate(baseDate);
+    setShowEndPicker(true);
+  };
+
+  const handleStartDateChange = (_event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowStartPicker(false);
+      if (selectedDate) {
+        applyStartDate(selectedDate);
+      }
+    } else if (selectedDate) {
+      setStartPickerDate(selectedDate);
+    }
+  };
+
+  const handleConfirmStartDate = () => {
+    applyStartDate(startPickerDate);
+    setShowStartPicker(false);
+  };
+
+  const handleCancelStartDate = () => {
+    setShowStartPicker(false);
+  };
+
+  const handleEndDateChange = (_event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowEndPicker(false);
+      if (selectedDate) {
+        applyEndDate(selectedDate);
+      }
+    } else if (selectedDate) {
+      setEndPickerDate(selectedDate);
+    }
+  };
+
+  const handleConfirmEndDate = () => {
+    applyEndDate(endPickerDate);
+    setShowEndPicker(false);
+  };
+
+  const handleCancelEndDate = () => {
+    setShowEndPicker(false);
+  };
 
   const isFormValid = useMemo(() => {
     return title.trim().length > 2 && destination.trim().length > 2;
@@ -259,31 +358,41 @@ const CreateTravelModal = () => {
                   <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     Start date
                   </Text>
-                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                  <Pressable
+                    onPress={openStartPicker}
+                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                    accessibilityRole="button"
+                    accessibilityLabel="Select start date"
+                  >
                     <Ionicons name="calendar-outline" size={20} color={iconPrimaryColor} />
-                    <TextInput
-                      value={startDate}
-                      onChangeText={setStartDate}
-                      placeholder="2025-05-10"
-                      placeholderTextColor={placeholderColor}
-                      className={`flex-1 text-base h-7 ${inputTextClass}`}
-                    />
-                  </View>
+                    <Text
+                      className={`flex-1 text-xs ${startDate ? inputTextClass : ""}`}
+                      style={{ color: startDate ? undefined : placeholderColor }}
+                    >
+                      {startDate || "2025-05-10"}
+                    </Text>
+                    <Ionicons name="chevron-down" size={18} color={iconPrimaryColor} />
+                  </Pressable>
                 </View>
                 <View className="flex-1">
                   <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
                     End date
                   </Text>
-                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                  <Pressable
+                    onPress={openEndPicker}
+                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                    accessibilityRole="button"
+                    accessibilityLabel="Select end date"
+                  >
                     <Ionicons name="calendar-number-outline" size={20} color={iconPrimaryColor} />
-                    <TextInput
-                      value={endDate}
-                      onChangeText={setEndDate}
-                      placeholder="2025-05-16"
-                      placeholderTextColor={placeholderColor}
-                      className={`flex-1 text-base h-7 ${inputTextClass}`}
-                    />
-                  </View>
+                    <Text
+                      className={`flex-1 text-xs ${endDate ? inputTextClass : ""}`}
+                      style={{ color: endDate ? undefined : placeholderColor }}
+                    >
+                      {endDate || "2025-05-16"}
+                    </Text>
+                    <Ionicons name="chevron-down" size={18} color={iconPrimaryColor} />
+                  </Pressable>
                 </View>
               </View>
 
@@ -407,6 +516,92 @@ const CreateTravelModal = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {showStartPicker && Platform.OS === "android" ? (
+        <DateTimePicker
+          value={startDateValue ?? new Date()}
+          mode="date"
+          display="calendar"
+          onChange={handleStartDateChange}
+        />
+      ) : null}
+
+      {showEndPicker && Platform.OS === "android" ? (
+        <DateTimePicker
+          value={endDateValue ?? startDateValue ?? new Date()}
+          mode="date"
+          display="calendar"
+          onChange={handleEndDateChange}
+          minimumDate={startDateValue ?? undefined}
+        />
+      ) : null}
+
+      {Platform.OS === "ios" && showStartPicker ? (
+        <Modal transparent animationType="slide" visible>
+          <View className="justify-end flex-1 bg-black/50">
+            <View
+              className={`rounded-t-3xl px-5 pt-4 pb-6 ${
+                isDarkMode ? "bg-card-dark border border-border-dark" : "bg-white"
+              }`}
+            >
+              <View className="flex-row items-center justify-between">
+                <Pressable onPress={handleCancelStartDate} className="px-2 py-2">
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Cancel</Text>
+                </Pressable>
+                <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+                  Start date
+                </Text>
+                <Pressable onPress={handleConfirmStartDate} className="px-2 py-2">
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Done</Text>
+                </Pressable>
+              </View>
+              <View className="mt-2">
+                <DateTimePicker
+                  value={startPickerDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleStartDateChange}
+                  themeVariant={isDarkMode ? "dark" : "light"}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
+
+      {Platform.OS === "ios" && showEndPicker ? (
+        <Modal transparent animationType="slide" visible>
+          <View className="justify-end flex-1 bg-black/50">
+            <View
+              className={`rounded-t-3xl px-5 pt-4 pb-6 ${
+                isDarkMode ? "bg-card-dark border border-border-dark" : "bg-white"
+              }`}
+            >
+              <View className="flex-row items-center justify-between">
+                <Pressable onPress={handleCancelEndDate} className="px-2 py-2">
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Cancel</Text>
+                </Pressable>
+                <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+                  End date
+                </Text>
+                <Pressable onPress={handleConfirmEndDate} className="px-2 py-2">
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Done</Text>
+                </Pressable>
+              </View>
+              <View className="mt-2">
+                <DateTimePicker
+                  value={endPickerDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleEndDateChange}
+                  minimumDate={startDateValue ?? undefined}
+                  themeVariant={isDarkMode ? "dark" : "light"}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
     </SafeAreaView>
   );
 };
