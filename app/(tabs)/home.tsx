@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, PanResponder, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Animated, FlatList, PanResponder, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ACTION_WIDTH = 96;
@@ -190,6 +190,7 @@ const Home = () => {
   );
 
   const travelList = useMemo(() => travels.slice(0, 3), [travels]);
+  const hasMoreTravels = travels.length > travelList.length;
 
   const getDateRangeLabel = (travel: TravelRecord): string => {
     if (travel.startDate && travel.endDate) {
@@ -396,51 +397,60 @@ const Home = () => {
     <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
       <BackgroundCircles isDarkMode={isDarkMode} />
 
-      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 50 }}>
-        <View className="pt-10">
-          <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
-            Welcome back{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}!
-          </Text>
-          <Text className={`mt-2 text-3xl font-bold ${headingTextClass}`}>
-            Ready for your next escape?
-          </Text>
-          <Text className={`mt-3 text-base ${bodyTextClass}`}>
-            Tap into Flidio’s AI to craft bespoke trips, or revisit your saved
-            adventures.
-          </Text>
-
-          <View className="mt-6">
-            <Pressable
-              onPress={handleCreateTrip}
-              className="flex-row items-center justify-center flex-1 gap-2 px-5 py-4 rounded-3xl bg-primary-600"
-            >
-              <Ionicons name="add-circle" size={22} color="white" />
-              <Text className="text-base font-semibold text-white">
-                Plan a trip
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View className="mt-10">
-          <View className="flex-row items-center justify-between">
-            <Text className={`text-lg font-semibold ${headingTextClass}`}>
-              Your journeys
+      <FlatList
+        data={travelList}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => <TravelCardItem travel={item} />}
+        ItemSeparatorComponent={() => <View className="h-4" />}
+        ListHeaderComponent={
+          <View className="pt-10">
+            <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+              Welcome back{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}!
             </Text>
-            {/* <Pressable
-              onPress={async () => {
-                await Haptics.selectionAsync();
-                // TODO: Navigate to travel archive once implemented
-              }}
-              className="flex-row items-center gap-1"
-            >
-              <Text className={`text-sm font-medium ${accentTextClass}`}>
-                See all
-              </Text>
-              <Ionicons name="chevron-forward" size={16} color={iconAccentColor} />
-            </Pressable> */}
-          </View>
+            <Text className={`mt-2 text-3xl font-bold ${headingTextClass}`}>
+              Ready for your next escape?
+            </Text>
+            <Text className={`mt-3 text-base ${bodyTextClass}`}>
+              Tap into Flidio’s AI to craft bespoke trips, or revisit your saved
+              adventures.
+            </Text>
 
+            <View className="mt-6">
+              <Pressable
+                onPress={handleCreateTrip}
+                className="flex-row items-center justify-center flex-1 gap-2 px-5 py-4 rounded-3xl bg-primary-600"
+              >
+                <Ionicons name="add-circle" size={22} color="white" />
+                <Text className="text-base font-semibold text-white">
+                  Plan a trip
+                </Text>
+              </Pressable>
+            </View>
+
+            <View className="mt-10">
+              <View className="flex-row items-center justify-between">
+                <Text className={`text-lg font-semibold ${headingTextClass}`}>
+                  Your journeys
+                </Text>
+                {/* <Pressable
+                  onPress={async () => {
+                    await Haptics.selectionAsync();
+                    // TODO: Navigate to travel archive once implemented
+                  }}
+                  className="flex-row items-center gap-1"
+                >
+                  <Text className={`text-sm font-medium ${accentTextClass}`}>
+                    See all
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={iconAccentColor} />
+                </Pressable> */}
+              </View>
+            </View>
+
+            <View className="mt-4" />
+          </View>
+        }
+        ListEmptyComponent={
           <View className="mt-4">
             {isLoadingTravels ? (
               <View className={`p-6 rounded-3xl ${cardClass}`}>
@@ -459,7 +469,7 @@ const Home = () => {
                   <Text className={`text-sm font-semibold ${accentTextClass}`}>Try again</Text>
                 </Pressable>
               </View>
-            ) : travelList.length === 0 ? (
+            ) : (
               <View className={`p-6 border rounded-3xl ${cardClass}`}>
                 <View className="flex-row items-start gap-4">
                   <View
@@ -487,54 +497,57 @@ const Home = () => {
                   </Text>
                 </Pressable>
               </View>
-            ) : (
-              <View className="gap-4">
-                {travelList.map((travel) => (
-                  <TravelCardItem key={travel.id} travel={travel} />
-                ))}
-
-                {travels.length > travelList.length && (
-                  <Pressable
-                    onPress={async () => {
-                      await Haptics.selectionAsync();
-                      // TODO: implement travels archive screen
-                    }}
-                    className={`flex-row items-center justify-center gap-2 px-4 py-3 border rounded-full ${secondaryButtonClass}`}
-                  >
-                    <Ionicons name="map-outline" size={18} color={iconAccentColor} />
-                    <Text className={`text-sm font-semibold ${accentTextClass}`}>
-                      View all saved itineraries
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
             )}
           </View>
-        </View>
+        }
+        ListFooterComponent={
+          <View className="mt-6">
+            {hasMoreTravels ? (
+              <Pressable
+                onPress={async () => {
+                  await Haptics.selectionAsync();
+                  // TODO: implement travels archive screen
+                }}
+                className={`flex-row items-center justify-center gap-2 px-4 py-3 border rounded-full ${secondaryButtonClass}`}
+              >
+                <Ionicons name="map-outline" size={18} color={iconAccentColor} />
+                <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                  View all saved itineraries
+                </Text>
+              </Pressable>
+            ) : null}
 
-        <View className="mt-10">
-          <View className={`p-6 rounded-3xl ${tipCardClass}`}>
-            <Text className={`text-lg font-semibold ${tipHeadingClass}`}>Pro tip</Text>
-            <Text className={`mt-2 text-sm ${tipBodyClass}`}>
-              Personalize your traveler profile to help Flidio recommend
-              experiences that match your vibe.
-            </Text>
+            <View className="mt-10">
+              <View className={`p-6 rounded-3xl ${tipCardClass}`}>
+                <Text className={`text-lg font-semibold ${tipHeadingClass}`}>Pro tip</Text>
+                <Text className={`mt-2 text-sm ${tipBodyClass}`}>
+                  Personalize your traveler profile to help Flidio recommend
+                  experiences that match your vibe.
+                </Text>
 
-            <Pressable
-              onPress={async () => {
-                await Haptics.selectionAsync();
-                router.push("/userProfileModal");
-              }}
-              className="flex-row items-center gap-2 mt-5"
-            >
-              <Text className={`text-sm font-semibold ${tipLinkTextClass}`}>
-                Update profile
-              </Text>
-              <Ionicons name="arrow-forward" size={16} color={iconTipColor} />
-            </Pressable>
+                <Pressable
+                  onPress={async () => {
+                    await Haptics.selectionAsync();
+                    router.push("/userProfileModal");
+                  }}
+                  className="flex-row items-center gap-2 mt-5"
+                >
+                  <Text className={`text-sm font-semibold ${tipLinkTextClass}`}>
+                    Update profile
+                  </Text>
+                  <Ionicons name="arrow-forward" size={16} color={iconTipColor} />
+                </Pressable>
+              </View>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        }
+        contentContainerStyle={{
+          paddingBottom: 50,
+          paddingHorizontal: 20,
+        }}
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 };
