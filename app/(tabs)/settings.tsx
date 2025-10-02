@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -38,8 +39,15 @@ const SUPPORT_LINKS = [
 ] as const;
 
 const Settings = () => {
+  const router = useRouter();
   const { settings, updateSettings, saving, clearSettings } = useSettingsContext();
-  const { clearProfile } = useUserProfileContext();
+  const {
+    clearProfile,
+    profile,
+    hasProfile,
+    loading: profileLoading,
+    saving: profileSaving,
+  } = useUserProfileContext();
 
   const isDarkMode = settings?.theme === "dark";
 
@@ -67,6 +75,31 @@ const Settings = () => {
   const storedApiKey = settings?.aiApiKey?.trim() ?? "";
   const hasStoredApiKey = storedApiKey.length > 0;
   const canRemoveApiKey = hasStoredApiKey || apiKey.trim().length > 0;
+  const profileDisabled = profileLoading || profileSaving;
+
+  const profileUpdatedLabel = useMemo(() => {
+    if (!profile?.updatedAt) {
+      return null;
+    }
+    const updatedAtDate = new Date(profile.updatedAt);
+    if (Number.isNaN(updatedAtDate.getTime())) {
+      return null;
+    }
+    return updatedAtDate.toLocaleDateString();
+  }, [profile?.updatedAt]);
+
+  const profileTravelStylesLabel = useMemo(() => {
+    const styles = profile?.travelStyles ?? [];
+    if (!styles.length) {
+      return "Curate the travel styles you love to tailor suggestions.";
+    }
+    if (styles.length <= 3) {
+      return styles.join(", ");
+    }
+    const visible = styles.slice(0, 3).join(", ");
+    const remaining = styles.length - 3;
+    return `${visible} +${remaining} more`;
+  }, [profile?.travelStyles]);
 
   const appVersion = useMemo(() => {
     return Constants.expoConfig?.version ?? "1.0.0";
@@ -255,6 +288,105 @@ const Settings = () => {
         </View>
 
         <View className="gap-4 mt-8 space-y-6">
+          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 mr-4">
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Traveler profile</Text>
+                <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
+                  Keep your preferences fresh so AI itineraries feel bespoke to you.
+                </Text>
+              </View>
+              <Ionicons name="person-circle-outline" size={26} color={iconAccentColor} />
+            </View>
+
+            <View className="gap-4 mt-5">
+              {profileLoading ? (
+                <Text className={`text-sm ${textSecondaryClass}`}>Loading profile details...</Text>
+              ) : hasProfile ? (
+                <View className="gap-4">
+                  <View className="flex-row items-start gap-3">
+                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
+                      <Ionicons name="id-card-outline" size={18} color={iconAccentColor} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                        {profile?.name}
+                      </Text>
+                      <Text className={`mt-0.5 text-sm ${textSecondaryClass}`}>
+                        {[profile?.location, profile?.age ? `${profile.age} yrs` : null]
+                          .filter(Boolean)
+                          .join(" • ")}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View className="flex-row items-start gap-3">
+                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
+                      <Ionicons name="compass-outline" size={18} color={iconAccentColor} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className={`text-xs font-semibold tracking-wide uppercase ${textSecondaryClass}`}>
+                        Travel styles
+                      </Text>
+                      <Text className={`mt-1 text-sm ${textSecondaryClass}`}>{profileTravelStylesLabel}</Text>
+                    </View>
+                  </View>
+
+                  {profile?.bio ? (
+                    <View className="flex-row items-start gap-3">
+                      <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
+                        <Ionicons name="sparkles-outline" size={18} color={iconAccentColor} />
+                      </View>
+                      <Text className={`flex-1 text-sm leading-5 ${textSecondaryClass}`}>{profile.bio}</Text>
+                    </View>
+                  ) : null}
+
+                  {profileUpdatedLabel ? (
+                    <Text
+                      className={`text-[11px] uppercase tracking-[0.2em] ${textSecondaryClass}`}
+                    >
+                      Updated {profileUpdatedLabel}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : (
+                <View className="flex-row items-start gap-3">
+                  <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
+                    <Ionicons name="trail-sign-outline" size={18} color={iconAccentColor} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                      Build your traveler profile
+                    </Text>
+                    <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
+                      Share a few details to help Flidio curate adventures that match your vibe.
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            <Pressable
+              onPress={async () => {
+                await Haptics.selectionAsync();
+                router.push("/userProfileModal");
+              }}
+              disabled={profileDisabled}
+              className={`mt-5 flex-row items-center justify-center gap-2 rounded-full px-5 py-3 ${
+                profileDisabled ? "bg-primary-500/30" : "bg-primary-600"
+              }`}
+            >
+              <Ionicons name="create-outline" size={18} color="white" />
+              <Text
+                className={`text-sm font-semibold text-white ${
+                  profileDisabled ? "opacity-75" : "opacity-100"
+                }`}
+              >
+                {hasProfile ? "Update profile" : "Create profile"}
+              </Text>
+            </Pressable>
+          </View>
+
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
