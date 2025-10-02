@@ -67,7 +67,6 @@ const TravelDetails = () => {
   const chipClass = isDarkMode
     ? "bg-primary-600/15 border border-border-dark"
     : "bg-primary-100/80 border border-border-light";
-  const chipTextClass = isDarkMode ? "text-primary-100" : "text-primary-700";
 
   const displayTitle = travel?.itinerary?.title?.toString().trim() || travel?.title || "Trip details";
   const displayDeparture =

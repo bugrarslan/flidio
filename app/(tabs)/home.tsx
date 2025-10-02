@@ -1,14 +1,30 @@
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
+import { deleteTravel, getAllTravels, type TravelRecord } from "@/services/databaseService";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Animated, PanResponder, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getAllTravels, type TravelRecord } from "@/services/databaseService";
+const ACTION_WIDTH = 96;
+
+const readAnimatedValue = (value: Animated.Value): number => {
+  const candidate = value as unknown as { __getValue?: () => number; _value?: number };
+  if (typeof candidate.__getValue === "function") {
+    try {
+      return candidate.__getValue();
+    } catch {
+      // ignore and fall back
+    }
+  }
+  if (typeof candidate._value === "number") {
+    return candidate._value;
+  }
+  return 0;
+};
 
 const Home = () => {
   const router = useRouter();
@@ -17,6 +33,13 @@ const Home = () => {
   const [travels, setTravels] = useState<TravelRecord[]>([]);
   const [isLoadingTravels, setIsLoadingTravels] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [openCardId, setOpenCardId] = useState<number | null>(null);
+  const translateXRefs = useRef<Map<number, Animated.Value>>(new Map());
+  const openCardIdRef = useRef(openCardId);
+
+  useEffect(() => {
+    openCardIdRef.current = openCardId;
+  }, [openCardId]);
 
   const isDarkMode = settings?.theme === "dark";
   const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
@@ -66,18 +89,105 @@ const Home = () => {
     router.push("/createTravelModal");
   };
 
-  const handleOpenTravel = async (travelId: number) => {
-    await Haptics.selectionAsync();
-    router.push({
-      pathname: "/travel/[id]",
-      params: { id: String(travelId) },
-    });
-  };
-
   const handleRetryLoadTravels = async () => {
     await Haptics.selectionAsync();
     fetchTravels();
   };
+
+  const getTranslateX = useCallback(
+    (id: number) => {
+      let value = translateXRefs.current.get(id);
+      if (!value) {
+        value = new Animated.Value(0);
+        translateXRefs.current.set(id, value);
+      }
+      return value;
+    },
+    [translateXRefs]
+  );
+
+  const animateCardTo = useCallback(
+    (id: number, toValue: number) => {
+      const value = translateXRefs.current.get(id);
+      if (!value) {
+        return;
+      }
+      Animated.spring(value, {
+        toValue,
+        useNativeDriver: true,
+      }).start();
+    },
+    [translateXRefs]
+  );
+
+  const animateCardToRef = useRef(animateCardTo);
+  useEffect(() => {
+    animateCardToRef.current = animateCardTo;
+  }, [animateCardTo]);
+
+  const closeCard = useCallback(
+    (id: number) => {
+      animateCardTo(id, 0);
+      setOpenCardId((current) => (current === id ? null : current));
+    },
+    [animateCardTo]
+  );
+
+  const closeAllCards = useCallback(() => {
+    translateXRefs.current.forEach((_, id) => {
+      animateCardTo(id, 0);
+    });
+    setOpenCardId(null);
+  }, [animateCardTo, translateXRefs]);
+
+  const handleDeleteTravel = useCallback(
+    async (travel: TravelRecord) => {
+      try {
+        await deleteTravel(travel.id);
+        translateXRefs.current.delete(travel.id);
+        setTravels((previous) => previous.filter((item) => item.id !== travel.id));
+        setOpenCardId((current) => (current === travel.id ? null : current));
+      } catch (error) {
+        console.error("Failed to delete travel", error);
+        Alert.alert("Couldn’t delete trip", "Please try again in a moment.");
+      }
+    },
+    [translateXRefs]
+  );
+
+  const confirmDeleteTravel = useCallback(
+    async (travel: TravelRecord) => {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      closeCard(travel.id);
+      Alert.alert(
+        "Delete this trip?",
+        `“${travel.title}” will be removed permanently.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              void handleDeleteTravel(travel);
+            },
+          },
+        ]
+      );
+    },
+    [closeCard, handleDeleteTravel]
+  );
+
+  const handleOpenTravel = useCallback(
+    async (travelId: number) => {
+      await Haptics.selectionAsync();
+      closeAllCards();
+      router.push({
+        pathname: "/travel/[id]",
+        params: { id: String(travelId) },
+      });
+    },
+    [closeAllCards, router]
+  );
 
   const travelList = useMemo(() => travels.slice(0, 3), [travels]);
 
@@ -111,6 +221,175 @@ const Home = () => {
       return `$${numericBudget.toLocaleString()}`;
     }
     return travel.budget;
+  };
+
+  const TravelCardItem = ({ travel }: { travel: TravelRecord }) => {
+    const translateX = getTranslateX(travel.id);
+    const latestValueRef = useRef(0);
+    const startXRef = useRef(0);
+    const deleteButtonOpacity = useMemo(
+      () =>
+        translateX.interpolate({
+          inputRange: [-ACTION_WIDTH, -ACTION_WIDTH * 0.6, -8, 0],
+          outputRange: [1, 0.5, 0.1, 0],
+          extrapolate: "clamp",
+        }),
+      [translateX]
+    );
+    const isCardOpen = openCardId === travel.id;
+
+    useEffect(() => {
+      latestValueRef.current = readAnimatedValue(translateX);
+      startXRef.current = latestValueRef.current;
+    }, [translateX]);
+
+    useEffect(() => {
+      const listenerId = translateX.addListener(({ value }) => {
+        latestValueRef.current = value;
+      });
+      return () => {
+        translateX.removeListener(listenerId);
+      };
+    }, [translateX]);
+
+    const panResponder = useMemo(() => {
+      return PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gestureState) => {
+          const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+          return isHorizontal && Math.abs(gestureState.dx) > 5;
+        },
+        onPanResponderGrant: () => {
+          startXRef.current = latestValueRef.current;
+          const previousId = openCardIdRef.current;
+          if (previousId !== null && previousId !== travel.id) {
+            animateCardToRef.current(previousId, 0);
+            setOpenCardId((current) => (current === previousId ? null : current));
+            openCardIdRef.current = null;
+          }
+        },
+        onPanResponderMove: (_event, gestureState) => {
+          const nextValue = Math.min(0, Math.max(-ACTION_WIDTH, startXRef.current + gestureState.dx));
+          translateX.setValue(nextValue);
+          latestValueRef.current = nextValue;
+        },
+        onPanResponderRelease: (_event, gestureState) => {
+          const finalValue = startXRef.current + gestureState.dx;
+          const shouldOpen = finalValue < -ACTION_WIDTH / 2;
+          if (shouldOpen) {
+            const previousId = openCardIdRef.current;
+            if (previousId !== null && previousId !== travel.id) {
+              animateCardToRef.current(previousId, 0);
+            }
+            setOpenCardId(travel.id);
+            openCardIdRef.current = travel.id;
+            animateCardToRef.current(travel.id, -ACTION_WIDTH);
+            latestValueRef.current = -ACTION_WIDTH;
+          } else {
+            animateCardToRef.current(travel.id, 0);
+            setOpenCardId((current) => (current === travel.id ? null : current));
+            openCardIdRef.current = null;
+            latestValueRef.current = 0;
+          }
+        },
+        onPanResponderTerminate: () => {
+          const currentValue = latestValueRef.current;
+          const shouldOpen = currentValue < -ACTION_WIDTH / 2;
+          if (shouldOpen) {
+            const previousId = openCardIdRef.current;
+            if (previousId !== null && previousId !== travel.id) {
+              animateCardToRef.current(previousId, 0);
+            }
+            setOpenCardId(travel.id);
+            openCardIdRef.current = travel.id;
+            animateCardToRef.current(travel.id, -ACTION_WIDTH);
+            latestValueRef.current = -ACTION_WIDTH;
+          } else {
+            animateCardToRef.current(travel.id, 0);
+            setOpenCardId((current) => (current === travel.id ? null : current));
+            openCardIdRef.current = null;
+            latestValueRef.current = 0;
+          }
+        },
+      });
+    }, [travel.id, translateX]);
+
+    const budgetLabel = getBudgetLabel(travel);
+    const createdAtDate = travel.createdAt ? new Date(travel.createdAt) : null;
+    const createdAtLabel =
+      createdAtDate && !Number.isNaN(createdAtDate.getTime())
+        ? createdAtDate.toLocaleDateString()
+        : travel.createdAt ?? "";
+
+    return (
+      <View className="relative">
+        <View
+          className="absolute inset-y-0 right-0 flex-row items-center pr-4"
+          pointerEvents={isCardOpen ? "auto" : "none"}
+        >
+          <Animated.View style={{ opacity: deleteButtonOpacity }}>
+            <Pressable
+              onPress={() => confirmDeleteTravel(travel)}
+              accessibilityRole="button"
+              accessibilityLabel="Delete trip"
+              className={`rounded-full ${isDarkMode ? "bg-red-500/20" : "bg-red-500/15"} p-4`}
+            >
+              <Ionicons name="trash-outline" size={20} color={isDarkMode ? "#f87171" : "#dc2626"} />
+            </Pressable>
+          </Animated.View>
+        </View>
+
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={{ transform: [{ translateX: translateX }], width: "100%" }}
+        >
+          <Pressable
+            onPress={() => handleOpenTravel(travel.id)}
+            className={`p-5 rounded-3xl ${travelCardClass}`}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 pr-3">
+                <Text className={`text-base font-semibold ${headingTextClass}`} numberOfLines={1}>
+                  {travel.title}
+                </Text>
+                <Text className={`mt-1 text-sm ${accentTextClass}`} numberOfLines={1}>
+                  {travel.departure} → {travel.destination}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={iconAccentColor} />
+            </View>
+
+            <View className="flex-row flex-wrap items-center mt-4 gap-x-4 gap-y-2">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="calendar-outline" size={16} color={iconAccentColor} />
+                <Text className={`text-xs ${travelMetaTextClass}`}>
+                  {getDateRangeLabel(travel)}
+                </Text>
+              </View>
+
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="people-outline" size={16} color={iconAccentColor} />
+                <Text className={`text-xs ${travelMetaTextClass}`}>
+                  {getTravelersLabel(travel)}
+                </Text>
+              </View>
+
+              {budgetLabel ? (
+                <View className="flex-row items-center gap-2">
+                  <Ionicons name="cash-outline" size={16} color={iconAccentColor} />
+                  <Text className={`text-xs ${travelMetaTextClass}`}>{budgetLabel}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {createdAtLabel ? (
+              <Text className={`mt-3 text-[11px] uppercase tracking-[0.2em] ${travelMetaTextClass}`}>
+                Saved {createdAtLabel}
+              </Text>
+            ) : null}
+          </Pressable>
+        </Animated.View>
+      </View>
+    );
   };
 
   return (
@@ -210,62 +489,9 @@ const Home = () => {
               </View>
             ) : (
               <View className="gap-4">
-                {travelList.map((travel) => {
-                  const budgetLabel = getBudgetLabel(travel);
-                  const createdAtDate = travel.createdAt ? new Date(travel.createdAt) : null;
-                  const createdAtLabel =
-                    createdAtDate && !Number.isNaN(createdAtDate.getTime())
-                      ? createdAtDate.toLocaleDateString()
-                      : travel.createdAt ?? "";
-                  return (
-                    <Pressable
-                      key={travel.id}
-                      onPress={() => handleOpenTravel(travel.id)}
-                      className={`p-5 rounded-3xl ${travelCardClass}`}
-                    >
-                      <View className="flex-row items-center justify-between">
-                        <View className="flex-1 pr-3">
-                          <Text className={`text-base font-semibold ${headingTextClass}`} numberOfLines={1}>
-                            {travel.title}
-                          </Text>
-                          <Text className={`mt-1 text-sm ${accentTextClass}`} numberOfLines={1}>
-                            {travel.departure} → {travel.destination}
-                          </Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={18} color={iconAccentColor} />
-                      </View>
-
-                      <View className="flex-row flex-wrap items-center mt-4 gap-x-4 gap-y-2">
-                        <View className="flex-row items-center gap-2">
-                          <Ionicons name="calendar-outline" size={16} color={iconAccentColor} />
-                          <Text className={`text-xs ${travelMetaTextClass}`}>
-                            {getDateRangeLabel(travel)}
-                          </Text>
-                        </View>
-
-                        <View className="flex-row items-center gap-2">
-                          <Ionicons name="people-outline" size={16} color={iconAccentColor} />
-                          <Text className={`text-xs ${travelMetaTextClass}`}>
-                            {getTravelersLabel(travel)}
-                          </Text>
-                        </View>
-
-                        {budgetLabel && (
-                          <View className="flex-row items-center gap-2">
-                            <Ionicons name="cash-outline" size={16} color={iconAccentColor} />
-                            <Text className={`text-xs ${travelMetaTextClass}`}>{budgetLabel}</Text>
-                          </View>
-                        )}
-                      </View>
-
-                      {createdAtLabel ? (
-                        <Text className={`mt-3 text-[11px] uppercase tracking-[0.2em] ${travelMetaTextClass}`}>
-                          Saved {createdAtLabel}
-                        </Text>
-                      ) : null}
-                    </Pressable>
-                  );
-                })}
+                {travelList.map((travel) => (
+                  <TravelCardItem key={travel.id} travel={travel} />
+                ))}
 
                 {travels.length > travelList.length && (
                   <Pressable
