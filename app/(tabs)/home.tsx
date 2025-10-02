@@ -140,23 +140,15 @@ const Home = () => {
                 Plan a trip
               </Text>
             </Pressable>
-
-            {/* <Pressable
-              onPress={handleDiscoverInspiration}
-              className="flex-row items-center justify-center flex-1 gap-2 px-5 py-4 bg-white border rounded-3xl border-primary-500/30"
-            >
-              <Ionicons name="compass-outline" size={22} color="#2563eb" />
-              <Text className="text-base font-semibold text-primary-600">Inspiration</Text>
-            </Pressable> */}
           </View>
         </View>
 
         <View className="mt-10">
           <View className="flex-row items-center justify-between">
             <Text className={`text-lg font-semibold ${headingTextClass}`}>
-              Upcoming journeys
+              Your journeys
             </Text>
-            <Pressable
+            {/* <Pressable
               onPress={async () => {
                 await Haptics.selectionAsync();
                 // TODO: Navigate to travel archive once implemented
@@ -167,7 +159,7 @@ const Home = () => {
                 See all
               </Text>
               <Ionicons name="chevron-forward" size={16} color={iconAccentColor} />
-            </Pressable>
+            </Pressable> */}
           </View>
 
           <View className="mt-4">
