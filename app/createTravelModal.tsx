@@ -1,7 +1,7 @@
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
-import { generateResponse } from "@/services/aiService";
+import { generateResponse, InvalidApiKeyError } from "@/services/aiService";
 import { createTravel } from "@/services/databaseService";
 import { formatPrompt } from "@/utils/formatPrompt";
 import { Ionicons } from "@expo/vector-icons";
@@ -122,7 +122,8 @@ const CreateTravelModal = () => {
 
     try {
       setIsGenerating(true);
-      const aiResponse = await generateResponse(prompt);
+      const apiKeyOverride = settings?.aiApiKey?.trim() || undefined;
+      const aiResponse = await generateResponse(prompt, { apiKey: apiKeyOverride });
       console.log("AI itinerary response:", aiResponse);
 
       const savedTravel = await createTravel({
@@ -153,10 +154,17 @@ const CreateTravelModal = () => {
       ]);
     } catch (error) {
       console.error("Failed to generate itinerary:", error);
-      Alert.alert(
-        "Couldn't generate itinerary",
-        "Please check your connection and try again."
-      );
+      if (error instanceof InvalidApiKeyError) {
+        Alert.alert(
+          "Check your Gemini API key",
+          "The AI couldn't authenticate with the provided key. Update or remove your custom key in Settings to continue."
+        );
+      } else {
+        Alert.alert(
+          "Couldn't generate itinerary",
+          "Please check your connection and try again."
+        );
+      }
     } finally {
       setIsGenerating(false);
     }
