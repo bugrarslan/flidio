@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback } from "react";
@@ -98,15 +97,6 @@ const OnboardingScreen = () => {
       </View>
 
       <View className="flex-1 px-6">
-        <View className="mt-12">
-          <View className="overflow-hidden border rounded-3xl border-white/15 bg-white/10">
-            <Image
-              source={require("../assets/images/react-logo.png")}
-              className="w-full h-56"
-              contentFit="cover"
-            />
-          </View>
-        </View>
 
         <View className="flex-1 mt-10">
           <Text
