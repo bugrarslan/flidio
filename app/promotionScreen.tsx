@@ -11,27 +11,33 @@ import { useSettingsContext } from "@/context/SettingsContext";
 const PROMO_FEATURES = [
   {
     icon: "flash-outline",
-    title: "Instant inspiration",
+    title: "AI travel architect",
     description:
-      "Spin up premium AI itineraries in under 60 seconds tailored to your vibe.",
+      "Describe a dream escape and watch Flidio draft day-by-day magic in seconds.",
+  },
+  {
+    icon: "map-outline",
+    title: "Smart itinerary tweaks",
+    description:
+      "Auto-balance pace, budgets, and hidden gems with adaptive planning suggestions.",
   },
   {
     icon: "cloud-download-outline",
-    title: "Offline vault",
+    title: "Offline-first vault",
     description:
-      "Auto-sync trips for offline access, flight notes, and packing checklists.",
+      "Keep confirmations, packing notes, and AI tips synced even when you're off-grid.",
   },
   {
     icon: "color-wand-outline",
-    title: "Personalized insights",
+    title: "Taste-matched picks",
     description:
-      "Enjoy recommendations based on your travel styles, budget, and wishlist.",
+      "Get dining, culture, and adventure recs tuned to your saved travel styles.",
   },
   {
     icon: "sparkles-outline",
-    title: "Premium concierge",
+    title: "Concierge roadmap",
     description:
-      "Unlock upcoming chat-based planning with live destination experts.",
+      "Be first to unlock live destination experts and collaborative trip boards.",
   },
 ] as const;
 
@@ -56,10 +62,9 @@ const PromotionScreen = () => {
   const priceCardBorderClass = isDarkMode ? "border border-primary-500/25" : "border border-white/40";
   const priceTextClass = isDarkMode ? "text-accent-text-light" : "text-primary-700";
   const priceSubTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
-  const statCardBackgroundClass = isDarkMode ? "bg-primary-600/15" : "bg-white/15";
-  const primaryButtonBackground = isDarkMode ? "bg-accent-light" : "bg-white";
-  const primaryButtonTextClass = isDarkMode ? "text-accent-text-light" : "text-primary-600";
-  const primaryButtonIconColor = "#2563eb";
+  const primaryButtonBackground = isDarkMode ? "bg-primary-500" : "bg-white";
+  const primaryButtonTextClass = isDarkMode ? "text-white" : "text-primary-600";
+  const primaryButtonIconColor = isDarkMode ? "#ffffff" : "#2563eb";
   const secondaryButtonTextClass = isDarkMode ? "text-accent-text-muted-dark" : "text-secondary-50/90";
 
   const handleUnlockPro = useCallback(async () => {
@@ -102,9 +107,6 @@ const PromotionScreen = () => {
           <Text className={`text-sm font-semibold uppercase tracking-[0.25em] ${bodyTextClass}`}>
             Flidio Pro
           </Text>
-          <Pressable onPress={handleMaybeLater} className="px-2 py-1">
-            <Text className={`text-sm font-medium ${secondaryButtonTextClass}`}>Skip</Text>
-          </Pressable>
         </View>
 
         <View className="mt-8">
@@ -188,7 +190,7 @@ const PromotionScreen = () => {
 
           <View className="items-center gap-2 mt-4">
             <Pressable onPress={handleMaybeLater} className="items-center">
-              <Text className={`text-sm font-medium ${secondaryButtonTextClass}`}>
+              <Text className={`text-md font-medium ${secondaryButtonTextClass} py-2`}>
                 Maybe later
               </Text>
             </Pressable>

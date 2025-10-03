@@ -15,7 +15,7 @@ const RootNavigator = () => {
       return;
     }
 
-    const targetRoute = shouldShowOnboarding ? "/onboardingScreen" : "/promotionScreen";
+    const targetRoute = shouldShowOnboarding ? "/onboardingScreen" : "/home";
 
     if (previousTargetRef.current === targetRoute) {
       return;
