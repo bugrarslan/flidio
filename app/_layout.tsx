@@ -38,6 +38,7 @@ const RootNavigator = () => {
         options={{ presentation: "modal" }}
       />
       <Stack.Screen name="onboardingScreen" />
+      <Stack.Screen name="promotionScreen" />
     </Stack>
   );
 };

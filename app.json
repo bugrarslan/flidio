@@ -11,10 +11,9 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bugrarslan.flidio",
-      "icon": {
-        "light": "./assets/icons/ios-light.png",
-        "dark": "./assets/icons/ios-dark.png",
-        "tinted": "./assets/icons/ios-tinted.png"
+      "icon": "./assets/icons/ios-icon.icon",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -52,13 +51,13 @@
           "enableFTS": true,
           "useSQLCipher": true,
           "android": {
-            // Override the shared configuration for Android
             "enableFTS": false,
             "useSQLCipher": false
           },
           "ios": {
-            // You can also override the shared configurations for iOS
-            "customBuildFlags": ["-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"]
+            "customBuildFlags": [
+              "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"
+            ]
           }
         }
       ]
@@ -66,6 +65,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6079e088-904d-43bb-a774-fe4676e1c0c8"
+      }
     }
   }
 }
