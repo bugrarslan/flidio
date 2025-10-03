@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSettingsContext } from "@/context/SettingsContext";
@@ -13,19 +13,25 @@ const PROMO_FEATURES = [
     icon: "flash-outline",
     title: "Instant inspiration",
     description:
-      "Spin up curated day plans with premium AI models tuned for travel delight.",
+      "Spin up premium AI itineraries in under 60 seconds tailored to your vibe.",
   },
   {
-    icon: "layers-outline",
-    title: "Unlimited itineraries",
+    icon: "cloud-download-outline",
+    title: "Offline vault",
     description:
-      "Save every itinerary with rich notes, offline access, and seamless syncing soon.",
+      "Auto-sync trips for offline access, flight notes, and packing checklists.",
   },
   {
     icon: "color-wand-outline",
     title: "Personalized insights",
     description:
-      "Unlock travel style recommendations built around your preferences and mood.",
+      "Enjoy recommendations based on your travel styles, budget, and wishlist.",
+  },
+  {
+    icon: "sparkles-outline",
+    title: "Premium concierge",
+    description:
+      "Unlock upcoming chat-based planning with live destination experts.",
   },
 ] as const;
 
@@ -44,8 +50,13 @@ const PromotionScreen = () => {
   const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-white";
   const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-50/90";
   const featureIconWrapperClass = isDarkMode ? "bg-primary-500/25" : "bg-primary-600/60";
-  const calloutBackgroundClass = isDarkMode ? "bg-card-dark/90" : "bg-white/15";
-  const calloutBorderClass = isDarkMode ? "border-border-dark" : "border-white/15";
+  const heroBadgeBackgroundClass = isDarkMode ? "bg-primary-500/20" : "bg-white/15";
+  const heroBadgeBorderClass = isDarkMode ? "border border-primary-400/40" : "border border-white/25";
+  const priceCardBackgroundClass = isDarkMode ? "bg-card-dark/95" : "bg-white/95";
+  const priceCardBorderClass = isDarkMode ? "border border-primary-500/25" : "border border-white/40";
+  const priceTextClass = isDarkMode ? "text-accent-text-light" : "text-primary-700";
+  const priceSubTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
+  const statCardBackgroundClass = isDarkMode ? "bg-primary-600/15" : "bg-white/15";
   const primaryButtonBackground = isDarkMode ? "bg-accent-light" : "bg-white";
   const primaryButtonTextClass = isDarkMode ? "text-accent-text-light" : "text-primary-600";
   const primaryButtonIconColor = "#2563eb";
@@ -82,7 +93,11 @@ const PromotionScreen = () => {
         <View className={`absolute w-48 h-48 rounded-full bottom-1/3 right-10 ${accentCircleClass}`} />
       </View>
 
-      <View className="flex-1 px-6">
+      <ScrollView
+        className="flex-1 px-6"
+        contentContainerStyle={{ paddingBottom: 60 }}
+        showsVerticalScrollIndicator={false}
+      >
         <View className="flex-row items-center justify-between pt-6">
           <Text className={`text-sm font-semibold uppercase tracking-[0.25em] ${bodyTextClass}`}>
             Flidio Pro
@@ -92,24 +107,46 @@ const PromotionScreen = () => {
           </Pressable>
         </View>
 
-        <View className="flex-1 mt-8">
-          <Text className={`text-4xl font-bold leading-tight ${headingTextClass}`}>
+        <View className="mt-8">
+          <Text className={`text-[34px] font-bold leading-tight ${headingTextClass}`}>
             Elevate every getaway
           </Text>
-          <Text className={`mt-4 text-base ${bodyTextClass}`}>
-            Upgrade to Flidio Pro for limitless itineraries, deeper personalization, and premium AI extras designed for explorers like you.
+          <Text className={`mt-4 text-base leading-relaxed ${bodyTextClass}`}>
+            Unlock Flidio Pro for limitless itineraries, concierge-level AI, and premium tools built to help you dream, plan, and book faster than ever.
           </Text>
 
           <View
-            className={`mt-6 border rounded-3xl px-5 py-4 flex-row items-center gap-4 ${calloutBorderClass} ${calloutBackgroundClass}`}
+            className={`self-start px-4 py-2 mt-5 rounded-full flex-row items-center gap-2 ${heroBadgeBackgroundClass} ${heroBadgeBorderClass}`}
           >
-            <View className={`p-3 rounded-full ${featureIconWrapperClass}`}>
-              <Ionicons name="diamond-outline" size={26} color={isDarkMode ? "#bfdbfe" : "#1d4ed8"} />
+            <Ionicons name="sparkles" size={16} color={isDarkMode ? "#bfdbfe" : "#dbeafe"} />
+            <Text className={`text-xs font-semibold uppercase tracking-[0.35em] ${bodyTextClass}`}>
+              Limited launch bonus
+            </Text>
+          </View>
+
+          <View className={`mt-6 rounded-3xl p-[22px] ${priceCardBackgroundClass} ${priceCardBorderClass}`}>
+            <View className="flex-row items-end justify-between">
+              <View>
+                <Text className={`text-xs font-semibold uppercase tracking-[0.35em] ${bodyTextClass}`}>
+                  Launch offer
+                </Text>
+                <View className="flex-row items-baseline gap-3 mt-3">
+                  <Text className={`text-5xl font-bold ${priceTextClass}`}>$2.99</Text>
+                  <Text className={`text-sm uppercase tracking-[0.35em] ${priceSubTextClass}`}>
+                    / month
+                  </Text>
+                </View>
+              </View>
+              <View className="items-end">
+                <Text className={`text-sm font-semibold ${priceSubTextClass}`}>Normally</Text>
+                <Text className={`text-lg font-bold line-through ${priceSubTextClass}`}>$3.99</Text>
+              </View>
             </View>
-            <View className="flex-1">
-              <Text className={`text-lg font-semibold ${headingTextClass}`}>Intro launch deal</Text>
-              <Text className={`mt-1 text-sm ${bodyTextClass}`}>
-                Early supporters lock in lifetime Pro perks at a friendly founder rate.
+
+            <View className="flex-row items-center gap-2 mt-6">
+              <Ionicons name="shield-checkmark" size={18} color={primaryButtonIconColor} />
+              <Text className={`text-xs font-medium ${priceSubTextClass}`}>
+                Cancel anytime • Founders get lifetime rate protection
               </Text>
             </View>
           </View>
@@ -121,18 +158,22 @@ const PromotionScreen = () => {
                 className={`flex-row items-start gap-4 p-4 border rounded-2xl ${cardBorderClass} ${cardBackgroundClass}`}
               >
                 <View className={`p-3 rounded-full ${featureIconWrapperClass}`}>
-                  <Ionicons name={feature.icon as keyof typeof Ionicons.glyphMap} size={24} color={isDarkMode ? "#e2e8f0" : "white"} />
+                  <Ionicons
+                    name={feature.icon as keyof typeof Ionicons.glyphMap}
+                    size={22}
+                    color={isDarkMode ? "#e2e8f0" : "white"}
+                  />
                 </View>
                 <View className="flex-1">
                   <Text className={`text-lg font-semibold ${headingTextClass}`}>{feature.title}</Text>
-                  <Text className={`mt-1 text-sm ${bodyTextClass}`}>{feature.description}</Text>
+                  <Text className={`mt-1 text-sm leading-relaxed ${bodyTextClass}`}>{feature.description}</Text>
                 </View>
               </View>
             ))}
           </View>
         </View>
 
-        <View className="pb-10">
+        <View className="pt-8 pb-10">
           <Pressable
             onPress={handleUnlockPro}
             className={`overflow-hidden rounded-full ${primaryButtonBackground}`}
@@ -145,13 +186,18 @@ const PromotionScreen = () => {
             </View>
           </Pressable>
 
-          <Pressable onPress={handleMaybeLater} className="items-center mt-4">
-            <Text className={`text-sm font-medium ${secondaryButtonTextClass}`}>
-              Maybe later
+          <View className="items-center gap-2 mt-4">
+            <Pressable onPress={handleMaybeLater} className="items-center">
+              <Text className={`text-sm font-medium ${secondaryButtonTextClass}`}>
+                Maybe later
+              </Text>
+            </Pressable>
+            <Text className={`text-[11px] uppercase tracking-[0.35em] ${secondaryButtonTextClass}`}>
+              No charges until your trial ends
             </Text>
-          </Pressable>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
