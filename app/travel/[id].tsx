@@ -5,6 +5,7 @@ import { getTravelById, type TravelRecord } from "@/services/databaseService";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -184,6 +185,7 @@ const TravelDetails = () => {
 
   return (
     <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
+      <StatusBar style="auto" />
       <BackgroundCircles isDarkMode={isDarkMode} />
 
       <ScrollView

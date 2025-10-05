@@ -5,6 +5,7 @@ import { deleteTravel, getAllTravels, type TravelRecord } from "@/services/datab
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Animated, FlatList, PanResponder, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -395,6 +396,7 @@ const Home = () => {
 
   return (
     <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
+      <StatusBar style="auto" />
       <BackgroundCircles isDarkMode={isDarkMode} />
 
       <FlatList

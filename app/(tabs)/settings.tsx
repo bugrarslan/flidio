@@ -19,6 +19,7 @@ import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
 import { resetTravelDatabase } from "@/services/databaseService";
+import { StatusBar } from "expo-status-bar";
 
 const SUPPORT_LINKS = [
   {
@@ -273,6 +274,7 @@ const Settings = () => {
 
   return (
     <SafeAreaView className={`flex-1 ${backgroundClass}`}>
+      <StatusBar style="auto" />
       <BackgroundCircles isDarkMode={isDarkMode} />
 
       <ScrollView

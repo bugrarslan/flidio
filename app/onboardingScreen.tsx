@@ -84,7 +84,7 @@ const OnboardingScreen = () => {
 
   return (
     <SafeAreaView className={`flex-1 ${backgroundClass}`}>
-      <StatusBar style={statusBarStyle} />
+      <StatusBar style="auto" />
 
       {/* Background decorative circles */}
       <View className="absolute inset-0">
