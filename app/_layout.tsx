@@ -70,7 +70,7 @@ const RootNavigator = () => {
         options={{ presentation: "modal" }}
       />
       <Stack.Screen name="onboardingScreen" />
-      <Stack.Screen name="promotionScreen" />
+      <Stack.Screen name="promotionScreen" options={{ presentation: "modal" }} />
     </Stack>
   );
 };

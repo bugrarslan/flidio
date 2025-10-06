@@ -171,7 +171,7 @@ const CreateTravelModal = () => {
   };
 
   const isFormValid = useMemo(() => {
-    return title.trim().length > 2 && destination.trim().length > 2;
+    return title.trim().length > 2 && destination.trim().length > 2 && startDate.trim().length > 0 && endDate.trim().length > 0;
   }, [title, destination]);
 
   const toggleVibe = async (vibe: string) => {
@@ -188,7 +188,7 @@ const CreateTravelModal = () => {
     if (!isFormValid) {
       Alert.alert(
         "A few more details",
-        "Give your trip a name and choose a destination to continue."
+        "Give your trip a name and choose a destination and dates to continue."
       );
       return;
     }
