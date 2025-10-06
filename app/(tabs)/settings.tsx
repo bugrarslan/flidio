@@ -13,6 +13,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Purchases from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
@@ -71,6 +72,11 @@ const Settings = () => {
 
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{
+    hasProSubscription: boolean;
+    loading: boolean;
+    error: string | null;
+  }>({ hasProSubscription: false, loading: true, error: null });
   type DataAction = "profile-settings" | "itineraries" | "all";
   const [pendingAction, setPendingAction] = useState<DataAction | null>(null);
   const storedApiKey = settings?.aiApiKey?.trim() ?? "";
@@ -111,6 +117,23 @@ const Settings = () => {
       setApiKey(settings.aiApiKey);
     }
   }, [settings]);
+
+  useEffect(() => {
+    checkSubscriptionStatus();
+  }, []);
+
+  const checkSubscriptionStatus = async () => {
+      try {
+        setSubscriptionStatus(prev => ({ ...prev, loading: true, error: null }));
+        const customerInfo = await Purchases.getCustomerInfo();
+        const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+                                 customerInfo.activeSubscriptions.includes("flidio_monthly");
+        setSubscriptionStatus({ hasProSubscription, loading: false, error: null });
+      } catch (error) {
+        console.error("Failed to check subscription status:", error);
+        setSubscriptionStatus({ hasProSubscription: false, loading: false, error: "Failed to check subscription" });
+      }
+    };
 
   const handleToggleTheme = useCallback(async () => {
     await Haptics.selectionAsync();
@@ -291,8 +314,105 @@ const Settings = () => {
         </View>
 
         <View className="gap-4 mt-8 space-y-6">
-          {/* pro subscription */}
+          {/* Pro subscription status */}
+          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 mr-4">
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Pro features</Text>
+                <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
+                  {subscriptionStatus.loading 
+                    ? "Checking subscription status..."
+                    : subscriptionStatus.hasProSubscription
+                    ? "You have access to all premium features including unlimited AI itineraries."
+                    : "Upgrade to Pro for unlimited AI-powered travel itineraries and premium features."
+                  }
+                </Text>
+              </View>
+              <View className={`p-3 rounded-full ${
+                subscriptionStatus.loading 
+                  ? isDarkMode ? "bg-gray-500/15" : "bg-gray-500/10"
+                  : subscriptionStatus.hasProSubscription
+                  ? isDarkMode ? "bg-green-500/15" : "bg-green-500/10"
+                  : isDarkMode ? "bg-orange-500/15" : "bg-orange-500/10"
+              }`}>
+                <Ionicons 
+                  name={
+                    subscriptionStatus.loading 
+                      ? "time-outline"
+                      : subscriptionStatus.hasProSubscription
+                      ? "checkmark-circle-outline"
+                      : "star-outline"
+                  } 
+                  size={26} 
+                  color={
+                    subscriptionStatus.loading 
+                      ? iconMutedColor
+                      : subscriptionStatus.hasProSubscription
+                      ? "#22c55e"
+                      : "#f59e0b"
+                  } 
+                />
+              </View>
+            </View>
 
+            <View className="mt-5">
+              {subscriptionStatus.loading ? (
+                <View className="flex-row items-center gap-3">
+                  <View className={`p-3 rounded-full ${isDarkMode ? "bg-gray-500/15" : "bg-gray-500/10"}`}>
+                    <Ionicons name="hourglass-outline" size={18} color={iconMutedColor} />
+                  </View>
+                  <Text className={`text-sm ${textSecondaryClass}`}>Verifying subscription status...</Text>
+                </View>
+              ) : subscriptionStatus.error ? (
+                <View className="flex-row items-center gap-3">
+                  <View className={`p-3 rounded-full ${isDarkMode ? "bg-red-500/15" : "bg-red-500/10"}`}>
+                    <Ionicons name="warning-outline" size={18} color={iconDangerColor} />
+                  </View>
+                  <Text className={`text-sm ${textSecondaryClass}`}>{subscriptionStatus.error}</Text>
+                </View>
+              ) : subscriptionStatus.hasProSubscription ? (
+                <View className="gap-3">
+                  <View className="flex-row items-center gap-3">
+                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-green-500/15" : "bg-green-500/10"}`}>
+                      <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                    </View>
+                    <View className="flex-1">
+                      <Text className={`text-sm font-semibold ${textPrimaryClass}`}>Pro subscription active</Text>
+                      <Text className={`text-xs ${textSecondaryClass}`}>Unlimited AI itineraries and premium features</Text>
+                    </View>
+                  </View>
+                  <View className="flex-row items-center gap-3">
+                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
+                      <Ionicons name="sparkles" size={18} color={iconAccentColor} />
+                    </View>
+                    <Text className={`text-sm ${textSecondaryClass}`}>All premium features unlocked</Text>
+                  </View>
+                </View>
+              ) : (
+                <View className="gap-3">
+                  <View className="flex-row items-center gap-3">
+                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-orange-500/15" : "bg-orange-500/10"}`}>
+                      <Ionicons name="star-outline" size={18} color="#f59e0b" />
+                    </View>
+                    <View className="flex-1">
+                      <Text className={`text-sm font-semibold ${textPrimaryClass}`}>Free plan</Text>
+                      <Text className={`text-xs ${textSecondaryClass}`}>Limited features • Upgrade for unlimited access</Text>
+                    </View>
+                  </View>
+                  <Pressable
+                    onPress={async () => {
+                      await Haptics.selectionAsync();
+                      router.push("/promotionScreen");
+                    }}
+                    className="flex-row items-center justify-center gap-2 px-5 py-3 mt-3 rounded-full bg-primary-600"
+                  >
+                    <Ionicons name="arrow-up-outline" size={18} color="white" />
+                    <Text className="text-sm font-semibold text-white">Upgrade to Pro</Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          </View>
 
           {/* Traveler profile */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
@@ -392,7 +512,7 @@ const Settings = () => {
                 {hasProfile ? "Update profile" : "Create profile"}
               </Text>
             </Pressable>
-          </View>
+          </View>          
 
           {/* Google AI access */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
