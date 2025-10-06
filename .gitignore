@@ -47,3 +47,10 @@ app-example
 # generated native folders
 /ios
 /android
+
+# landing
+/landing/node_modules
+/landing/.next
+/landing/out
+/landing/.DS_Store
+/landing/.env
