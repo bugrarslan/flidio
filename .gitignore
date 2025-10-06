@@ -49,6 +49,7 @@ app-example
 /android
 
 # landing
+# /landing/
 /landing/node_modules
 /landing/.next
 /landing/out
