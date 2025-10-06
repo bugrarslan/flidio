@@ -282,6 +282,7 @@ const Settings = () => {
         contentContainerStyle={{ paddingBottom: 50 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* header */}
         <View className="mt-6">
           <Text className={`text-3xl font-bold ${textPrimaryClass}`}>Settings</Text>
           <Text className={`mt-2 text-base ${textSecondaryClass}`}>
@@ -290,6 +291,10 @@ const Settings = () => {
         </View>
 
         <View className="gap-4 mt-8 space-y-6">
+          {/* pro subscription */}
+
+
+          {/* Traveler profile */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
@@ -389,6 +394,7 @@ const Settings = () => {
             </Pressable>
           </View>
 
+          {/* Google AI access */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
@@ -463,6 +469,7 @@ const Settings = () => {
             </View>
           </View>
 
+          {/* theme */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
@@ -482,6 +489,7 @@ const Settings = () => {
             </View>
           </View>
 
+          {/* Data control */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Data control</Text>
             <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
@@ -586,6 +594,7 @@ const Settings = () => {
             </View>
           </View>
 
+          {/* About Flidio */}
           <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
             <Text className={`text-lg font-semibold ${textPrimaryClass}`}>About Flidio</Text>
             <View className="gap-2 mt-4 space-y-3">

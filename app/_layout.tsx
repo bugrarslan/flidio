@@ -38,8 +38,8 @@ const RootNavigator = () => {
       return;
     }
 
-    getCustomerInfo();
-    getOfferings();
+    // getCustomerInfo();
+    // getOfferings();
 
     previousTargetRef.current = targetRoute;
     router.replace(targetRoute);
@@ -47,7 +47,7 @@ const RootNavigator = () => {
 
   async function getCustomerInfo() {
     const customerInfo = await Purchases.getCustomerInfo();
-    console.log("Customer Info:", JSON.stringify(customerInfo, null, 2));
+    console.log("Customer Info:", JSON.stringify(customerInfo.activeSubscriptions[0]));
   }
 
   async function getOfferings() {

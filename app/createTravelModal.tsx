@@ -20,7 +20,9 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Purchases from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const TRIP_VIBES = [
   "City explorer",
@@ -171,7 +173,7 @@ const CreateTravelModal = () => {
   };
 
   const isFormValid = useMemo(() => {
-    return title.trim().length > 2 && destination.trim().length > 2 && startDate.trim().length > 0 && endDate.trim().length > 0;
+    return title.trim().length > 2 && destination.trim().length > 2 && startDate && endDate;
   }, [title, destination]);
 
   const toggleVibe = async (vibe: string) => {
@@ -195,6 +197,30 @@ const CreateTravelModal = () => {
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
+    // Check if user has API key in settings
+    const hasApiKey = settings?.aiApiKey?.trim();
+    
+    // If no API key, check subscription status
+    if (!hasApiKey) {
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+                                 customerInfo.activeSubscriptions.includes("flidio_monthly");
+        
+        // If no subscription either, show promotion screen
+        if (!hasProSubscription) {
+          router.push("/promotionScreen");
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to check subscription status:", error);
+        // If we can't check subscription, show promotion screen as fallback
+        router.push("/promotionScreen");
+        return;
+      }
+    }
+
+    // Proceed with travel creation if user has API key or subscription
     const normalizedBudget = budget ? Number(budget) : null;
     const normalizedTravelers = travelers ? Number(travelers) : null;
 
@@ -221,7 +247,7 @@ const CreateTravelModal = () => {
 
     try {
       setIsGenerating(true);
-      const apiKeyOverride = settings?.aiApiKey?.trim() || undefined;
+      const apiKeyOverride = hasApiKey || undefined;
       const aiResponse = await generateResponse(prompt, { apiKey: apiKeyOverride });
       console.log("AI itinerary response:", aiResponse);
 
