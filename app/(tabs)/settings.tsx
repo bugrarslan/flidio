@@ -387,6 +387,51 @@ const Settings = () => {
                     </View>
                     <Text className={`text-sm ${textSecondaryClass}`}>All premium features unlocked</Text>
                   </View>
+                  
+                  {/* Cancel Subscription Button */}
+                  <Pressable
+                    onPress={async () => {
+                      await Haptics.selectionAsync();
+                      Alert.alert(
+                        "Cancel Pro Subscription?",
+                        "You'll continue to have Pro access until your current billing period ends. After that, you'll return to the free plan.",
+                        [
+                          { text: "Keep Pro", style: "cancel" },
+                          {
+                            text: "Cancel Subscription",
+                            style: "destructive",
+                            onPress: async () => {
+                              try {
+                                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                                // This will open the subscription management in the App Store/Play Store
+                                await Purchases.showManageSubscriptions();
+                                // Refresh subscription status after user returns
+                                setTimeout(() => {
+                                  checkSubscriptionStatus();
+                                }, 1000);
+                              } catch (error) {
+                                console.error("Failed to show manage subscriptions:", error);
+                                Alert.alert(
+                                  "Couldn't open subscription settings",
+                                  "Please go to your device's App Store to manage subscriptions."
+                                );
+                              }
+                            }
+                          }
+                        ]
+                      );
+                    }}
+                    className={`flex-row items-center justify-center gap-2 px-4 py-2.5 mt-3 rounded-full border ${
+                      isDarkMode 
+                        ? "border-red-500/30 bg-red-500/10" 
+                        : "border-red-500/20 bg-red-50"
+                    }`}
+                  >
+                    <Ionicons name="close-circle-outline" size={16} color={iconDangerColor} />
+                    <Text className={`text-sm font-medium ${isDarkMode ? "text-red-400" : "text-red-600"}`}>
+                      Manage Subscription
+                    </Text>
+                  </Pressable>
                 </View>
               ) : (
                 <View className="gap-3">

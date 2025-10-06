@@ -173,7 +173,7 @@ const CreateTravelModal = () => {
   };
 
   const isFormValid = useMemo(() => {
-    return title.trim().length > 2 && destination.trim().length > 2 && startDate && endDate;
+    return title.trim().length > 2 && destination.trim().length > 2;
   }, [title, destination]);
 
   const toggleVibe = async (vibe: string) => {
