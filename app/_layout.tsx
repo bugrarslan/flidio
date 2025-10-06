@@ -12,7 +12,7 @@ import Purchases from "react-native-purchases";
 
 const RootNavigator = () => {
   const router = useRouter();
-  const { loading, shouldShowOnboarding } = useSettingsContext();
+  const { loading, shouldShowOnboarding, updateSettings } = useSettingsContext();
   const previousTargetRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -32,14 +32,13 @@ const RootNavigator = () => {
       });
     }
 
+    getCustomerInfo();
+
     const targetRoute = shouldShowOnboarding ? "/onboardingScreen" : "/home";
 
     if (previousTargetRef.current === targetRoute) {
       return;
     }
-
-    // getCustomerInfo();
-    // getOfferings();
 
     previousTargetRef.current = targetRoute;
     router.replace(targetRoute);
@@ -47,13 +46,15 @@ const RootNavigator = () => {
 
   async function getCustomerInfo() {
     const customerInfo = await Purchases.getCustomerInfo();
-    console.log("Customer Info:", JSON.stringify(customerInfo.activeSubscriptions[0]));
-  }
-
-  async function getOfferings() {
-    const offerings = await Purchases.getOfferings();
-    if (offerings.current !== null && offerings.current.availablePackages.length !== 0) {
-      console.log("Offerings:", JSON.stringify(offerings, null, 2));
+    const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+                                 customerInfo.activeSubscriptions.includes("flidio_monthly");
+    if (hasProSubscription) {
+      console.log("User has an active Pro subscription.");
+      try {
+        await updateSettings({ isTrialVersion: false });
+      } catch (error) {
+        console.error("[settings] Failed to update Pro status", error);
+      }
     }
   }
 

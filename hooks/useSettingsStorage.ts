@@ -8,6 +8,8 @@ export interface StoredSettings {
   theme: ThemePreference;
   aiApiKey: string;
   showOnboarding: boolean;
+  isTrialVersion: boolean;
+  trialCreditUsed?: boolean;
   lastUpdatedAt: string;
 }
 
@@ -19,6 +21,8 @@ export const createDefaultSettings = (): StoredSettings => {
     theme: "light",
     aiApiKey: "",
     showOnboarding: true,
+    isTrialVersion: true,
+    trialCreditUsed: false,
     lastUpdatedAt: now,
   };
 };
@@ -31,6 +35,8 @@ const mergeSettings = (current: StoredSettings | null, updates: UpdateSettingsIn
     theme: updates.theme ?? base.theme,
     aiApiKey: updates.aiApiKey?.trim() ?? base.aiApiKey,
     showOnboarding: updates.showOnboarding ?? base.showOnboarding,
+    isTrialVersion: updates.isTrialVersion ?? base.isTrialVersion,
+    trialCreditUsed: updates.trialCreditUsed ?? base.trialCreditUsed,
     lastUpdatedAt: now,
   };
 };

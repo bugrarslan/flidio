@@ -23,7 +23,6 @@ import {
 import Purchases from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
 const TRIP_VIBES = [
   "City explorer",
   "Coastal chill",
@@ -35,7 +34,7 @@ const TRIP_VIBES = [
 
 const CreateTravelModal = () => {
   const router = useRouter();
-  const { settings } = useSettingsContext();
+  const { settings, updateSettings } = useSettingsContext();
   const { profile } = useUserProfileContext();
 
   const [title, setTitle] = useState("");
@@ -55,22 +54,36 @@ const CreateTravelModal = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const isDarkMode = settings?.theme === "dark";
-  const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
-  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
-  const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
-  const accentTextClass = isDarkMode ? "text-accent-text-dark" : "text-accent-text-light";
+  const screenBackgroundClass = isDarkMode
+    ? "bg-background-dark"
+    : "bg-background-light";
+  const headingTextClass = isDarkMode
+    ? "text-text-primary-dark"
+    : "text-text-primary-light";
+  const bodyTextClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-text-secondary-light";
+  const accentTextClass = isDarkMode
+    ? "text-accent-text-dark"
+    : "text-accent-text-light";
   const accentMutedTextClass = isDarkMode
     ? "text-accent-text-muted-dark"
     : "text-accent-text-muted-light";
-  const labelTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
+  const labelTextClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-secondary-600";
   const cardClass = isDarkMode
     ? "bg-card-dark border border-border-dark"
     : "bg-card-light border border-border-light";
-  const cardShadowClass = isDarkMode ? "shadow-xl shadow-primary-900/20" : "shadow-lg shadow-primary-900/5";
+  const cardShadowClass = isDarkMode
+    ? "shadow-xl shadow-primary-900/20"
+    : "shadow-lg shadow-primary-900/5";
   const inputContainerClass = isDarkMode
     ? "bg-input-background-dark border border-border-dark"
     : "bg-input-background-light border border-border-light";
-  const inputTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
+  const inputTextClass = isDarkMode
+    ? "text-text-primary-dark"
+    : "text-text-primary-light";
   const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
   const iconPrimaryColor = isDarkMode ? "#93c5fd" : "#2563eb";
   const vibeActiveContainerClass = isDarkMode
@@ -79,7 +92,9 @@ const CreateTravelModal = () => {
   const vibeInactiveContainerClass = isDarkMode
     ? "border-border-dark bg-card-dark"
     : "border-primary-500/20 bg-white";
-  const vibeInactiveTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
+  const vibeInactiveTextClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-secondary-600";
 
   const formatDateValue = useMemo(() => {
     return (date: Date) => {
@@ -199,24 +214,29 @@ const CreateTravelModal = () => {
 
     // Check if user has API key in settings
     const hasApiKey = settings?.aiApiKey?.trim();
-    
+
     // If no API key, check subscription status
     if (!hasApiKey) {
-      try {
-        const customerInfo = await Purchases.getCustomerInfo();
-        const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
-                                 customerInfo.activeSubscriptions.includes("flidio_monthly");
-        
-        // If no subscription either, show promotion screen
-        if (!hasProSubscription) {
+      if (settings?.isTrialVersion && settings?.trialCreditUsed) {
+        // Show trial promotion
+        try {
+          const customerInfo = await Purchases.getCustomerInfo();
+          const hasProSubscription =
+            typeof customerInfo.entitlements.active["Flidio Pro"] !==
+              "undefined" ||
+            customerInfo.activeSubscriptions.includes("flidio_monthly");
+
+          // If no subscription either, show promotion screen
+          if (!hasProSubscription) {
+            router.push("/promotionScreen");
+            return;
+          }
+        } catch (error) {
+          console.error("Failed to check subscription status:", error);
+          // If we can't check subscription, show promotion screen as fallback
           router.push("/promotionScreen");
           return;
         }
-      } catch (error) {
-        console.error("Failed to check subscription status:", error);
-        // If we can't check subscription, show promotion screen as fallback
-        router.push("/promotionScreen");
-        return;
       }
     }
 
@@ -248,7 +268,9 @@ const CreateTravelModal = () => {
     try {
       setIsGenerating(true);
       const apiKeyOverride = hasApiKey || undefined;
-      const aiResponse = await generateResponse(prompt, { apiKey: apiKeyOverride });
+      const aiResponse = await generateResponse(prompt, {
+        apiKey: apiKeyOverride,
+      });
       console.log("AI itinerary response:", aiResponse);
 
       const savedTravel = await createTravel({
@@ -292,6 +314,11 @@ const CreateTravelModal = () => {
       }
     } finally {
       setIsGenerating(false);
+      if (settings?.isTrialVersion && !settings?.trialCreditUsed) {
+        // Allow one free trial generation
+        await updateSettings({ trialCreditUsed: true });
+        console.log("Trial credit used, updating settings.");
+      }
     }
   };
 
@@ -321,19 +348,26 @@ const CreateTravelModal = () => {
               Close
             </Text>
           </Pressable>
-          <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+          <Text
+            className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}
+          >
             Trip builder
           </Text>
         </View>
 
-        <ScrollView
-          className="flex-1 px-5"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className={`p-6 mt-6 rounded-3xl ${cardClass} ${cardShadowClass}`}>
+        <ScrollView className="flex-1 px-5" keyboardShouldPersistTaps="handled">
+          <View
+            className={`p-6 mt-6 rounded-3xl ${cardClass} ${cardShadowClass}`}
+          >
             <View className="flex-row items-start gap-4">
-              <View className={`p-4 rounded-2xl ${isDarkMode ? "bg-primary-600/20" : "bg-primary-600/10"}`}>
-                <Ionicons name="planet-outline" size={28} color={iconPrimaryColor} />
+              <View
+                className={`p-4 rounded-2xl ${isDarkMode ? "bg-primary-600/20" : "bg-primary-600/10"}`}
+              >
+                <Ionicons
+                  name="planet-outline"
+                  size={28}
+                  color={iconPrimaryColor}
+                />
               </View>
               <View className="flex-1">
                 <Text className={`text-2xl font-semibold ${headingTextClass}`}>
@@ -348,11 +382,19 @@ const CreateTravelModal = () => {
 
             <View className="gap-4 mt-6 space-y-5">
               <View>
-                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text
+                  className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Trip title
                 </Text>
-                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                  <Ionicons name="bookmark-outline" size={20} color={iconPrimaryColor} />
+                <View
+                  className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                >
+                  <Ionicons
+                    name="bookmark-outline"
+                    size={20}
+                    color={iconPrimaryColor}
+                  />
                   <TextInput
                     value={title}
                     onChangeText={setTitle}
@@ -364,11 +406,19 @@ const CreateTravelModal = () => {
               </View>
 
               <View>
-                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text
+                  className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Destination
                 </Text>
-                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                  <Ionicons name="location-outline" size={20} color={iconPrimaryColor} />
+                <View
+                  className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                >
+                  <Ionicons
+                    name="location-outline"
+                    size={20}
+                    color={iconPrimaryColor}
+                  />
                   <TextInput
                     value={destination}
                     onChangeText={setDestination}
@@ -381,7 +431,9 @@ const CreateTravelModal = () => {
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                  <Text
+                    className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                  >
                     Start date
                   </Text>
                   <Pressable
@@ -390,18 +442,30 @@ const CreateTravelModal = () => {
                     accessibilityRole="button"
                     accessibilityLabel="Select start date"
                   >
-                    <Ionicons name="calendar-outline" size={20} color={iconPrimaryColor} />
+                    <Ionicons
+                      name="calendar-outline"
+                      size={20}
+                      color={iconPrimaryColor}
+                    />
                     <Text
                       className={`flex-1 text-xs ${startDate ? inputTextClass : ""}`}
-                      style={{ color: startDate ? undefined : placeholderColor }}
+                      style={{
+                        color: startDate ? undefined : placeholderColor,
+                      }}
                     >
                       {startDate || "2025-05-10"}
                     </Text>
-                    <Ionicons name="chevron-down" size={18} color={iconPrimaryColor} />
+                    <Ionicons
+                      name="chevron-down"
+                      size={18}
+                      color={iconPrimaryColor}
+                    />
                   </Pressable>
                 </View>
                 <View className="flex-1">
-                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                  <Text
+                    className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                  >
                     End date
                   </Text>
                   <Pressable
@@ -410,25 +474,41 @@ const CreateTravelModal = () => {
                     accessibilityRole="button"
                     accessibilityLabel="Select end date"
                   >
-                    <Ionicons name="calendar-number-outline" size={20} color={iconPrimaryColor} />
+                    <Ionicons
+                      name="calendar-number-outline"
+                      size={20}
+                      color={iconPrimaryColor}
+                    />
                     <Text
                       className={`flex-1 text-xs ${endDate ? inputTextClass : ""}`}
                       style={{ color: endDate ? undefined : placeholderColor }}
                     >
                       {endDate || "2025-05-16"}
                     </Text>
-                    <Ionicons name="chevron-down" size={18} color={iconPrimaryColor} />
+                    <Ionicons
+                      name="chevron-down"
+                      size={18}
+                      color={iconPrimaryColor}
+                    />
                   </Pressable>
                 </View>
               </View>
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                  <Text
+                    className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                  >
                     Budget (USD)
                   </Text>
-                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                    <Ionicons name="cash-outline" size={20} color={iconPrimaryColor} />
+                  <View
+                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                  >
+                    <Ionicons
+                      name="cash-outline"
+                      size={20}
+                      color={iconPrimaryColor}
+                    />
                     <TextInput
                       value={budget}
                       onChangeText={(value) => {
@@ -444,11 +524,19 @@ const CreateTravelModal = () => {
                   </View>
                 </View>
                 <View className="w-28">
-                  <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                  <Text
+                    className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                  >
                     Travelers
                   </Text>
-                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                    <Ionicons name="people-outline" size={20} color={iconPrimaryColor} />
+                  <View
+                    className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                  >
+                    <Ionicons
+                      name="people-outline"
+                      size={20}
+                      color={iconPrimaryColor}
+                    />
                     <TextInput
                       value={travelers}
                       onChangeText={(value) => {
@@ -466,7 +554,9 @@ const CreateTravelModal = () => {
               </View>
 
               <View>
-                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text
+                  className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Trip vibe
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -477,7 +567,9 @@ const CreateTravelModal = () => {
                         key={vibe}
                         onPress={() => toggleVibe(vibe)}
                         className={`rounded-full border px-4 py-2 ${
-                          isActive ? vibeActiveContainerClass : vibeInactiveContainerClass
+                          isActive
+                            ? vibeActiveContainerClass
+                            : vibeInactiveContainerClass
                         }`}
                       >
                         <Text
@@ -494,10 +586,14 @@ const CreateTravelModal = () => {
               </View>
 
               <View>
-                <Text className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text
+                  className={`text-xs font-semibold tracking-wide uppercase ${labelTextClass}`}
+                >
                   Special requests
                 </Text>
-                <View className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                <View
+                  className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}
+                >
                   <TextInput
                     value={notes}
                     onChangeText={setNotes}
@@ -516,7 +612,9 @@ const CreateTravelModal = () => {
             <Pressable
               onPress={handleGenerateItinerary}
               className={`flex-row items-center justify-center gap-2 rounded-full px-6 py-4 ${
-                isFormValid && !isGenerating ? "bg-primary-600" : "bg-primary-500/40"
+                isFormValid && !isGenerating
+                  ? "bg-primary-600"
+                  : "bg-primary-500/40"
               }`}
               disabled={!isFormValid || isGenerating}
             >
@@ -567,18 +665,32 @@ const CreateTravelModal = () => {
           <View className="justify-end flex-1 bg-black/50">
             <View
               className={`rounded-t-3xl px-5 pt-4 pb-6 ${
-                isDarkMode ? "bg-card-dark border border-border-dark" : "bg-white"
+                isDarkMode
+                  ? "bg-card-dark border border-border-dark"
+                  : "bg-white"
               }`}
             >
               <View className="flex-row items-center justify-between">
-                <Pressable onPress={handleCancelStartDate} className="px-2 py-2">
-                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Cancel</Text>
+                <Pressable
+                  onPress={handleCancelStartDate}
+                  className="px-2 py-2"
+                >
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                    Cancel
+                  </Text>
                 </Pressable>
-                <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+                <Text
+                  className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}
+                >
                   Start date
                 </Text>
-                <Pressable onPress={handleConfirmStartDate} className="px-2 py-2">
-                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Done</Text>
+                <Pressable
+                  onPress={handleConfirmStartDate}
+                  className="px-2 py-2"
+                >
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                    Done
+                  </Text>
                 </Pressable>
               </View>
               <View className="mt-2">
@@ -600,18 +712,26 @@ const CreateTravelModal = () => {
           <View className="justify-end flex-1 bg-black/50">
             <View
               className={`rounded-t-3xl px-5 pt-4 pb-6 ${
-                isDarkMode ? "bg-card-dark border border-border-dark" : "bg-white"
+                isDarkMode
+                  ? "bg-card-dark border border-border-dark"
+                  : "bg-white"
               }`}
             >
               <View className="flex-row items-center justify-between">
                 <Pressable onPress={handleCancelEndDate} className="px-2 py-2">
-                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Cancel</Text>
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                    Cancel
+                  </Text>
                 </Pressable>
-                <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+                <Text
+                  className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}
+                >
                   End date
                 </Text>
                 <Pressable onPress={handleConfirmEndDate} className="px-2 py-2">
-                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Done</Text>
+                  <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                    Done
+                  </Text>
                 </Pressable>
               </View>
               <View className="mt-2">
