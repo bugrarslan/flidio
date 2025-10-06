@@ -26,17 +26,17 @@ const SUPPORT_LINKS = [
   {
     label: "Privacy policy",
     icon: "shield-checkmark-outline",
-    url: "https://example.com/privacy",
+    url: "https://flidio.vercel.app/privacy",
   },
   {
     label: "Terms of service",
     icon: "document-text-outline",
-    url: "https://example.com/terms",
+    url: "https://flidio.vercel.app/terms",
   },
   {
     label: "Contact support",
     icon: "chatbubble-ellipses-outline",
-    url: "mailto:hello@flidio.app",
+    url: "mailto:bugra.arslan7@outlook.com",
   },
 ] as const;
 
