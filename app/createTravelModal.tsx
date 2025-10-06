@@ -299,6 +299,11 @@ const CreateTravelModal = () => {
           style: "cancel",
         },
       ]);
+      if (settings?.isTrialVersion && !settings?.trialCreditUsed) {
+        // Allow one free trial generation
+        await updateSettings({ trialCreditUsed: true });
+        console.log("Trial credit used, updating settings.");
+      }
     } catch (error) {
       console.error("Failed to generate itinerary:", error);
       if (error instanceof InvalidApiKeyError) {
@@ -314,11 +319,6 @@ const CreateTravelModal = () => {
       }
     } finally {
       setIsGenerating(false);
-      if (settings?.isTrialVersion && !settings?.trialCreditUsed) {
-        // Allow one free trial generation
-        await updateSettings({ trialCreditUsed: true });
-        console.log("Trial credit used, updating settings.");
-      }
     }
   };
 
