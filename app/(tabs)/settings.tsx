@@ -26,17 +26,17 @@ const SUPPORT_LINKS = [
   {
     label: "Privacy policy",
     icon: "shield-checkmark-outline",
-    url: "https://example.com/privacy",
+    url: "https://flidio.vercel.app/privacy",
   },
   {
     label: "Terms of service",
     icon: "document-text-outline",
-    url: "https://example.com/terms",
+    url: "https://flidio.vercel.app/terms",
   },
   {
     label: "Contact support",
     icon: "chatbubble-ellipses-outline",
-    url: "mailto:hello@flidio.app",
+    url: "mailto:bugra.arslan7@outlook.com",
   },
 ] as const;
 
@@ -123,17 +123,17 @@ const Settings = () => {
   }, []);
 
   const checkSubscriptionStatus = async () => {
-      try {
-        setSubscriptionStatus(prev => ({ ...prev, loading: true, error: null }));
-        const customerInfo = await Purchases.getCustomerInfo();
-        const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
-                                 customerInfo.activeSubscriptions.includes("flidio_monthly");
-        setSubscriptionStatus({ hasProSubscription, loading: false, error: null });
-      } catch (error) {
-        console.error("Failed to check subscription status:", error);
-        setSubscriptionStatus({ hasProSubscription: false, loading: false, error: "Failed to check subscription" });
-      }
-    };
+    try {
+      setSubscriptionStatus(prev => ({ ...prev, loading: true, error: null }));
+      const customerInfo = await Purchases.getCustomerInfo();
+      const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+                                customerInfo.activeSubscriptions.includes("flidio_monthly");
+      setSubscriptionStatus({ hasProSubscription, loading: false, error: null });
+    } catch (error) {
+      console.error("Failed to check subscription status:", error);
+      setSubscriptionStatus({ hasProSubscription: false, loading: false, error: "Failed to check subscription" });
+    }
+  };
 
   const handleToggleTheme = useCallback(async () => {
     await Haptics.selectionAsync();
@@ -295,6 +295,44 @@ const Settings = () => {
     });
   };
 
+  const handleRestorePurchases = async () => {
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const restoredInfo = await Purchases.restorePurchases();
+
+      const isPremium = typeof restoredInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+                        restoredInfo.activeSubscriptions.includes("flidio_monthly");
+
+      if (isPremium) {
+        console.log('Purchases restored successfully. User is now premium.');
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          'Purchases Restored',
+          'Your purchases have been restored successfully. Thank you!',
+          [{ text: 'OK', onPress: () => checkSubscriptionStatus() }]
+        );
+      } else {
+        console.log('Restore process completed, but no active subscription found.');
+        Alert.alert(
+          'No Purchases Found',
+          'No active purchase found to restore.',
+          [{ text: 'OK' }]
+        );
+      }
+
+      return restoredInfo;
+
+    } catch (e) {
+      console.error('An error occurred while restoring purchases:', e);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        'Restore Failed',
+        'An issue occurred while restoring your purchases. Please try again later.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
     <SafeAreaView className={`flex-1 ${backgroundClass}`}>
       <StatusBar style="auto" />
@@ -453,6 +491,21 @@ const Settings = () => {
                   >
                     <Ionicons name="arrow-up-outline" size={18} color="white" />
                     <Text className="text-sm font-semibold text-white">Upgrade to Pro</Text>
+                  </Pressable>
+                  
+                  {/* Restore Purchases Button */}
+                  <Pressable
+                    onPress={handleRestorePurchases}
+                    className={`flex-row items-center justify-center gap-2 px-4 py-2.5 mt-2 rounded-full border ${
+                      isDarkMode 
+                        ? "border-primary-500/30 bg-primary-500/10" 
+                        : "border-primary-500/20 bg-primary-50"
+                    }`}
+                  >
+                    <Ionicons name="refresh-outline" size={16} color={iconAccentColor} />
+                    <Text className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-primary-600"}`}>
+                      Restore Purchases
+                    </Text>
                   </Pressable>
                 </View>
               )}
