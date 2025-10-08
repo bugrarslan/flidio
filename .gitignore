@@ -49,9 +49,9 @@ app-example
 /android
 
 # landing
-# /landing/
-/landing/node_modules
-/landing/.next
-/landing/out
-/landing/.DS_Store
-/landing/.env
+# landing/*
+landing/node_modules
+landing/.next
+landing/out
+landing/.DS_Store
+landing/.env
