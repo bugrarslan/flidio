@@ -1,166 +1,232 @@
-# Flidio: AI-Powered Travel Planner
+# Flidio: AI-Powered Travel Itinerary Generator
 
-## 📄 Overview
-**Flidio** is an intelligent travel planning mobile application built with React Native and Expo. The app leverages AI technology (Google Generative AI) to create personalized travel itineraries based on user preferences and requirements. Features a freemium subscription model with RevenueCat integration, comprehensive user profile system, and premium features gating.
+AI-Powered Travel Planning Mobile App built with React Native, Expo, and TypeScript. It transforms travel preferences and details into personalized day-by-day itineraries using Google's Gemini AI API.
 
-**Why this application?**
-1. Demonstrate proficiency with React Native, Expo, and TypeScript development.
-2. Showcase integration of AI services for dynamic content generation.
-3. Implement subscription-based monetization with RevenueCat.
-4. Create intuitive UX with onboarding, modal screens, and tab navigation.
-5. Apply modern styling techniques with NativeWind (Tailwind CSS for React Native).
-6. Build comprehensive settings and user management system.
+Flidio is a comprehensive travel companion that features a freemium monetization model via RevenueCat, with an option for users to input their own Gemini API key for unrestricted use. All generated itineraries are stored locally using SQLite, ensuring an offline-first experience with complete privacy.
 
----
+------------------------------------------------------------------------
 
-## 🎯 Core Features
+## 📖 Table of Contents
 
-### 1. **Onboarding Experience**
-- First-time user onboarding screen with app introduction
-- One-time setup process for new users
-- Smooth transition to main application after completion
+-   🎯 Overview
+-   ✨ Features
+-   🛠 Tech Stack
+-   🏗 Architecture
+-   📁 Project Structure
+-   🎨 Design Patterns
+-   🚀 Key Implementation Details
+-   🔧 Development Setup
+-   📦 Building & Deployment
+-   📄 License
+-   📞 Support
 
-### 2. **User Profile Management**
-- Modal screen for collecting comprehensive user information:
-  - Personal details (name, age, location)
-  - Travel preferences and interests
-  - Travel styles and personality matching
-- AsyncStorage-backed persistence via Settings/UserProfile contexts
-- Profile data used for personalized AI travel recommendations
+------------------------------------------------------------------------
 
-### 3. **Advanced Travel Planning**
-- **Home Tab**: Display list of created travel plans with rich visual cards
-  - Swipe-to-delete functionality for travel items
-  - Trip summaries with budget and duration info
-- **Enhanced Create Travel Modal**: Comprehensive trip planning interface
-  - Native date pickers with platform-specific UI (@react-native-community/datetimepicker)
-  - Budget and traveler count inputs with validation
-  - Trip vibe selection (City explorer, Coastal chill, Mountain retreat, etc.)
-  - Special requests and notes section
-  - AI-powered itinerary generation with custom API key support
-  - Form validation with user-friendly error messages
+## 🎯 Overview
 
-### 4. **Subscription & Monetization System**
-- **FreeMium Model**: Free tier with limited features, Pro tier with unlimited access
-- **RevenueCat Integration**: Complete subscription management system
-  - Monthly subscription plans ($2.99/month)
-  - Subscription status checking and validation
-  - Premium features gating (API key OR subscription required)
-- **Promotion Screen**: Beautifully designed upsell interface
-  - Feature comparison and benefits highlight
-  - Native subscription purchase flow
-  - Secure payment processing through App Store/Google Play
+### Key Objectives
 
-### 5. **Comprehensive Settings & Configuration**
-- **Settings Tab** with advanced configuration options:
-  - **Pro Features Status**: Real-time subscription status display
-  - **API Key Management**: Google Generative AI key configuration
-  - **User Profile Management**: Update traveler profile anytime
-  - **Subscription Management**: Native subscription cancellation interface
-  - **Theme System**: Light/dark mode with persistent storage
-  - **Data Control**: Granular data management (profile, settings, itineraries)
-  - **Support Links**: Privacy policy, terms of service, contact support
-  - **App Information**: Version display and credits
+-   **AI-First Experience:** Seamless integration with Google Gemini API for state-of-the-art travel itinerary generation.
+-   **Local-First Architecture:** All generated itineraries and user data stored locally via SQLite for offline access and privacy.
+-   **Flexible Monetization:** Freemium model with trial credit, Pro subscriptions via RevenueCat, and a bring-your-own-API-key option.
+-   **Cross-Platform:** Single codebase for both iOS and Android using Expo's managed workflow.
+-   **Type Safety:** Full TypeScript implementation across the entire codebase for robust development.
+-   **Personalized Experience:** User profiles with travel preferences that influence AI-generated recommendations.
 
-### 6. **Conditional Access Control**
-- Smart feature gating logic:
-  1. Check for custom API key → Allow travel creation
-  2. Check for Pro subscription → Allow travel creation  
-  3. Neither available → Redirect to promotion screen
-- Seamless upgrade flow for premium features
-- Graceful error handling for subscription checks
+### Project Metadata
 
----
+-   **Version:** 0.7.0
+-   **Platform:** iOS, Android
+-   **Framework:** React Native (0.81.4) + Expo (SDK 54)
+-   **Language:** TypeScript 5.9+
+-   **Bundle ID:** com.bugrarslan.flidio
 
-## 🧰 Tech Stack & Architecture
+------------------------------------------------------------------------
 
-### **Core Technologies**
-1. **React Native + Expo + TypeScript**
-   - Expo SDK 51+ for cross-platform development
-   - TypeScript for comprehensive type safety and developer experience
-   - Functional components with React Hooks and modern patterns
-   - Expo Router for file-based navigation system
+## ✨ Features
 
-2. **Database & Storage**
-  - **Expo SQLite**: Persistent storage for generated travel itineraries and metadata
-  - **AsyncStorage**: Settings and traveler profile persistence with namespaced keys
-  - Offline-first architecture for data persistence
-  - Context API for surfacing persisted state throughout the app
-   - Profile data used for personalized AI travel recommendations
+### 🤖 AI Itinerary Generation
 
-3. **Subscription & Monetization**
-   - **RevenueCat (react-native-purchases)**: Complete subscription management
-   - App Store Connect and Google Play Console integration
-   - Subscription status validation and entitlements checking
-   - Native subscription management interface
+-   **Personalized Planning:** Generate day-by-day travel itineraries from user inputs using Gemini AI.
+-   **Detailed Input Options:**
+    -   Trip title and destination
+    -   Departure location and dates (start/end)
+    -   Budget (USD) and traveler count
+    -   Trip vibes: City explorer, Coastal chill, Mountain retreat, Foodie tour, Art & culture, Nightlife
+    -   Special requests and notes
+-   **Structured Output:** Morning, afternoon, and evening activities for each day with location-specific recommendations.
+-   **Smart Context:** AI considers user profile, travel styles, budget preferences, and trip details.
 
-4. **AI Integration**
-   - **Google Generative AI (Gemini)**: LLM integration for travel planning
-   - Custom API key support for power users
-   - JSON-structured responses for structured itinerary data
-   - Advanced prompt engineering for personalized recommendations
-   - Error handling for API failures and invalid keys
+### 🗺️ Travel Management
 
-5. **Native Components & UI**
-   - **@react-native-community/datetimepicker**: Platform-native date selection
-   - **NativeWind**: Tailwind CSS utilities for React Native
-   - **Expo Haptics**: Tactile feedback for enhanced UX
-   - **Expo Status Bar**: Dynamic status bar theming
-   - Custom theme system with persistent dark/light mode
+-   **Local Storage:** SQLite database for itinerary metadata with offline-first approach.
+-   **Swipe Actions:** Intuitive swipe-to-delete gesture on travel cards.
+-   **Detailed View:** Expandable day-by-day schedule with time-of-day breakdown.
+-   **Trip Overview:** Display key information like dates, budget, traveler count, and creation date.
+-   **Travel History:** Access all saved trips from the home screen with recent trips highlighted.
 
-6. **State Management & Architecture**
-   - **React Context API**: Settings and user profile providers shared across the app
-   - **Custom Hooks**: `useSettingsStorage` and `useUserProfileStorage` built on AsyncStorage
-   - **TypeScript Models**: Strong typing for AI responses, travel records, and persisted state
-   - **Persistence Strategy**: SQLite for itineraries, AsyncStorage for preferences and profiles
+### 👤 User Profile System
 
-### **Project Structure**
+-   **Traveler Profile:** Name, age, home location, and trip wishlist.
+-   **Travel Styles:** City breaks, Nature escapes, Culinary tours, Cultural deep dives, Adventure thrills, Wellness retreats, Family friendly.
+-   **Budget Preference:** Value, Balanced, or Premium tier selection.
+-   **Profile Integration:** User preferences automatically influence AI itinerary generation.
+-   **Profile Management:** Update or clear profile data at any time.
+
+### 💳 Monetization & Access Control
+
+-   **Trial System:** New users receive one free AI-generated itinerary.
+-   **Pro Subscription:** Unlimited itinerary generation via RevenueCat ($2.99/month).
+-   **Custom API Key:** Users can bring their own Gemini API key for unlimited access, bypassing subscriptions.
+-   **Access Flow:**
+    The app intelligently checks for a custom API key first, then a Pro subscription, and finally trial credit before showing the promotion screen.
+-   **Subscription Management:** 
+    -   Purchase Pro subscription
+    -   Restore previous purchases
+    -   Manage/cancel subscription via platform store
+-   **Subscription Status:** Real-time subscription verification and status display.
+
+### ⚙️ Settings & Customization
+
+-   **Theme System:** Light & Dark mode with automatic detection of system preference.
+-   **API Key Management:** Securely enter, view, and remove custom Gemini API key locally.
+-   **Data Management:** 
+    -   Clear profile & settings
+    -   Delete all itineraries
+    -   Full app data reset
+-   **Subscription Controls:** View status, restore purchases, upgrade to Pro, or manage subscription.
+-   **App Information:** Version display, privacy policy, terms of service, and support contact.
+
+### 🎨 Onboarding Experience
+
+-   **Feature Highlights:** Introduction to AI itineraries, offline storage, and customization.
+-   **Profile Creation:** Guided flow to build traveler profile for personalized recommendations.
+-   **Skip Option:** Allow users to explore the app before completing profile.
+
+------------------------------------------------------------------------
+
+## 🛠 Tech Stack
+
+| Category | Technology | Purpose |
+|----------|-----------|---------|
+| Core Framework | React Native 0.81.4, Expo SDK 54, TypeScript | Cross-platform development and type safety |
+| Navigation & Routing | Expo Router | File-based routing with native tabs |
+| State Management | React Context API, Custom Hooks | Global state for settings, user profile, and subscriptions |
+| AI & API Integration | @google/genai (Gemini Flash) | AI-powered travel itinerary generation |
+| Storage & Persistence | Expo SQLite, AsyncStorage | Itinerary metadata, user settings, and profile data |
+| Monetization | react-native-purchases (RevenueCat) | In-app subscriptions and purchase management |
+| UI Components & Styling | NativeWind, Tailwind CSS | Modern styling with responsive design |
+| Date & Time | @react-native-community/datetimepicker | Native date picker for iOS and Android |
+| UX Enhancement | Expo Haptics, Expo Image | Tactile feedback and optimized image rendering |
+| Developer Experience | ESLint, TypeScript, Expo Dev Client | Code quality, type checking, and custom builds |
+
+------------------------------------------------------------------------
+
+## 🏗 Architecture
+
+Flidio follows a **feature-based, layered architecture** with clear separation of concerns to ensure maintainability and scalability.
+
+```
+┌─────────────────────────────────────────────┐
+│           Presentation Layer                │
+│  (Screens, Modals, Components, Navigation)  │
+└─────────────────┬───────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────┐
+│         Application Layer                   │
+│  (Context Providers, Custom Hooks)          │
+└─────────────────┬───────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────┐
+│           Service Layer                     │
+│  (AI Service, Database, AsyncStorage)       │
+└─────────────────┬───────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────┐
+│           Data Layer                        │
+│  (SQLite, AsyncStorage, FileSystem)         │
+└─────────────────────────────────────────────┘
+```
+
+### Layer Responsibilities
+
+-   **Presentation Layer (app/, components/):** Renders UI, handles user input, manages navigation, and displays data.
+-   **Application Layer (context/, hooks/):** Manages global state, encapsulates business logic, and provides reusable hooks.
+-   **Service Layer (services/):** Handles API calls, database operations, and storage abstractions.
+-   **Data Layer:** Manages underlying storage mechanisms (SQLite for itineraries, AsyncStorage for settings/profile).
+
+------------------------------------------------------------------------
+
+## 📁 Project Structure
+
 ```
 flidio/
 ├── app/
-│   ├── _layout.tsx
-│   ├── index.tsx
+│   ├── _layout.tsx                  # Root layout with providers
+│   ├── index.tsx                    # Initial loading screen
 │   ├── (tabs)/
-│   │   ├── _layout.tsx
-│   │   ├── home.tsx
-│   │   └── settings.tsx
-│   ├── createTravelModal.tsx
-│   ├── onboardingScreen.tsx
-│   ├── promotionScreen.tsx
+│   │   ├── _layout.tsx              # Tab navigation layout
+│   │   ├── home.tsx                 # Home screen with travel list
+│   │   └── settings.tsx             # Settings and preferences
 │   ├── travel/
-│   │   └── [id].tsx
-│   └── userProfileModal.tsx
+│   │   └── [id].tsx                 # Travel detail screen (dynamic route)
+│   ├── createTravelModal.tsx        # Trip creation form
+│   ├── userProfileModal.tsx         # User profile editor
+│   ├── onboardingScreen.tsx         # First-time user onboarding
+│   └── promotionScreen.tsx          # Pro subscription promotion
+├── assets/
+│   ├── icons/                       # App icons and splash screens
+│   └── images/                      # Static images
 ├── components/
 │   └── ui/
-│       └── BackgroundCircles.tsx
+│       └── BackgroundCircles.tsx    # Decorative background component
 ├── context/
-│   ├── SettingsContext.tsx
-│   └── UserProfileContext.tsx
+│   ├── SettingsContext.tsx          # Settings state management
+│   └── UserProfileContext.tsx       # User profile state management
 ├── hooks/
-│   ├── useSettingsStorage.ts
-│   └── useUserProfileStorage.ts
+│   ├── useSettingsStorage.ts        # Settings persistence hook
+│   └── useUserProfileStorage.ts     # Profile persistence hook
 ├── services/
-│   ├── aiService.ts
-│   ├── asyncStorage.ts
-│   ├── databaseService.ts
-│   └── types.ts
+│   ├── aiService.ts                 # Google Gemini AI integration
+│   ├── databaseService.ts           # SQLite operations for travels
+│   ├── asyncStorage.ts              # AsyncStorage wrapper
+│   └── types.ts                     # Shared type definitions
 ├── utils/
-│   └── formatPrompt.ts
-├── assets/
-│   └── images/...
-├── global.css
-├── tailwind.config.js
-└── tsconfig.json
+│   └── formatPrompt.ts              # AI prompt formatting utility
+├── app.json                         # Expo configuration
+├── eas.json                         # EAS Build configuration
+├── tailwind.config.js               # Tailwind CSS configuration
+├── tsconfig.json                    # TypeScript configuration
+└── package.json                     # Dependencies and scripts
 ```
 
----
+**File Naming Conventions**
+- Screens: `camelCase.tsx`
+- Components: `PascalCase.tsx`
+- Hooks: `use*.ts`
+- Services: `*Service.ts`
+- Context: `*Context.tsx`
+
+------------------------------------------------------------------------
+
+## 🎨 Design Patterns
+
+-   **Context + Hook Pattern:** Global state management through Context API with custom hooks for encapsulation.
+-   **Service Layer Pattern:** Decouples UI from data logic with dedicated service modules.
+-   **Repository Pattern:** Custom hooks orchestrate between storage layers and UI components.
+-   **Singleton Pattern:** Shared SQLite database connection reused throughout the app.
+-   **Provider Pattern:** Nested context providers for settings and user profile state.
+-   **Adapter Pattern:** AsyncStorage service provides consistent interface for key-value storage.
+-   **Factory Pattern:** Default settings and profile creation functions.
+
+------------------------------------------------------------------------
 
 ## 🚀 Key Implementation Details
 
-### **Enhanced Database Schema**
+### Database Schema
+
 ```sql
--- Travels table storing generated itineraries
-CREATE TABLE travels (
+CREATE TABLE IF NOT EXISTS travels (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   departure TEXT NOT NULL,
@@ -174,255 +240,188 @@ CREATE TABLE travels (
 );
 ```
 
-> Settings and user profile preferences are persisted via AsyncStorage (`services/asyncStorage.ts`) using the custom hooks in `hooks/`.
+### AI Service Implementation
 
-### **Advanced AI Integration Flow**
-1. **Pre-flight Checks**: Validate API key OR subscription status
-2. **User Input Collection**: Enhanced form with date pickers, budget, vibes
-3. **Prompt Engineering**: Construct detailed prompt with user profile data
-4. **AI Processing**: Send request to Google Generative AI with error handling
-5. **Response Processing**: Parse structured JSON response containing:
-   - Daily detailed itineraries with times and locations
-   - Recommended activities and restaurants
-   - Budget breakdown and cost estimates
-   - Local tips, cultural notes, and travel advice
-   - Transportation recommendations
-6. **Data Persistence**: Store both user input and AI response in SQLite
-7. **Error Management**: Handle API failures, invalid keys, network issues
+**API Endpoint:** Google Gemini Flash (`gemini-flash-latest`)
 
-### **Subscription Flow Implementation**
+**Flow:**
+1. Format structured prompt with user inputs and profile data
+2. Send request to Gemini API with JSON response format
+3. Parse AI-generated itinerary from JSON response
+4. Store complete travel record in SQLite database
+5. Display structured day-by-day plan in detail view
+
+**Prompt Structure:**
+- Base instructions for JSON format and rules
+- User data: title, departure, destination, dates, budget, travelers
+- Trip vibes and special requests
+- User credentials: name, age, location, travel styles, bio
+- Required output format with daily morning/afternoon/evening plans
+
+**Error Handling:**
+- Invalid API key detection (401/403 errors)
+- Network error recovery
+- JSON parsing validation
+- User-friendly error messages
+
+### Subscription & Access Control
+
 ```typescript
-// Conditional access control in travel creation
-const handleGenerateItinerary = async () => {
+const canGenerateItinerary = async (): Promise<boolean> => {
   // 1. Check for custom API key
-  const hasApiKey = settings?.aiApiKey?.trim();
+  if (settings?.aiApiKey?.trim()) return true;
   
-  if (!hasApiKey) {
-    // 2. Check subscription status
-    const customerInfo = await Purchases.getCustomerInfo();
-    const hasProSubscription = 
-      typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
-      customerInfo.activeSubscriptions.includes("flidio_monthly");
-    
-    if (!hasProSubscription) {
-      // 3. Redirect to promotion screen
-      router.push("/promotionScreen");
-      return;
-    }
+  // 2. Check for Pro subscription
+  const customerInfo = await Purchases.getCustomerInfo();
+  if (customerInfo.entitlements.active["Flidio Pro"] || 
+      customerInfo.activeSubscriptions.includes("flidio_monthly")) {
+    return true;
   }
   
-  // 4. Proceed with travel creation
-  // ...
+  // 3. Check for trial credit
+  if (settings?.isTrialVersion && !settings?.trialCreditUsed) {
+    return true;
+  }
+  
+  // 4. Show promotion screen
+  return false;
 };
 ```
 
-### **Navigation Structure & Routing**
-```tsx
-// Expo Router file-based navigation
-<Stack screenOptions={{headerShown: false}}>
-  <Stack.Screen name="index"/>                    // App entry point
-  <Stack.Screen name="onboardingScreen"/>         // First-time setup
-  <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-  <Stack.Screen name="travel/[id]"/>             // Dynamic travel details
-  <Stack.Screen name="userProfileModal"/>         // Profile management
-  <Stack.Screen name="createTravelModal"/>        // Travel creation
-  <Stack.Screen name="promotionScreen"/>          // Subscription upsell
-</Stack>
+### AsyncStorage Key Management
 
-// Tab Navigator (nested in (tabs) group)
-<Tabs screenOptions={{
-  headerShown: false,
-  tabBarActiveTintColor: Colors.primary,
-  tabBarStyle: { theme-aware styling }
-}}>
-  <Tabs.Screen name="home" options={{
-    title: 'Travels',
-    tabBarIcon: ({ color }) => <Ionicons name="map" color={color} />
-  }}/>
-  <Tabs.Screen name="settings" options={{
-    title: 'Settings', 
-    tabBarIcon: ({ color }) => <Ionicons name="settings" color={color} />
-  }}/>
-</Tabs>
-```
+**Storage Keys:**
+- `@flidio:settings` - App settings (theme, API key, trial status)
+- `@flidio:user-profile` - User profile data (name, age, preferences)
 
----
+**Features:**
+- Automatic JSON serialization/deserialization
+- Namespaced keys with prefix
+- Type-safe operations with generics
+- Fallback value support
 
-## 🎨 Design System
+### Theme System
 
-### **Color Palette** (`tailwind.config.js`)
-```javascript
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#f0f9ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          900: '#1e3a8a',
-        },
-        secondary: {
-          50: '#f8fafc',
-          500: '#64748b',
-          600: '#475569',
-        }
-      }
-    }
-  }
-}
-```
+**Implementation:**
+- Light and Dark mode with system preference detection
+- Tailwind CSS custom color variables
+- Dynamic class names based on theme state
+- Consistent color palette across all screens
 
-### **Reusable Elements**
-- `BackgroundCircles`: Shared decorative backdrop used across major screens
-- Tailwind-powered screen layouts with inline component patterns
-- Animated travel cards with swipe gestures (implemented in `app/(tabs)/home.tsx`)
-- Promotion CTA components with RevenueCat purchase handling
-
----
-
-## 📱 Enhanced User Experience Flow
-
-### **First-Time User Journey**
-1. **App Launch**: Check for existing user data and subscription status
-2. **Onboarding**: Introduction screens with app benefits and features
-3. **Profile Creation**: Comprehensive user profile modal with travel preferences
-4. **Home Screen**: Clean interface showing travel plans and creation options
-
-### **Travel Creation Flow**
-1. **Access Control**: Check API key → Check subscription → Redirect to promotion if needed
-2. **Enhanced Form**: Native date pickers, budget inputs, vibe selection
-3. **AI Processing**: Real-time progress indicators and haptic feedback  
-4. **Result Handling**: Success alerts with navigation options or error management
-5. **Data Persistence**: Automatic saving with offline access
-
-### **Subscription Management**
-1. **Status Display**: Real-time subscription status in settings
-2. **Upgrade Flow**: Seamless transition to native subscription purchase
-3. **Feature Gating**: Conditional access to premium features
-4. **Cancellation**: Native subscription management interface
-
-### **Settings & Customization**
-1. **Profile Management**: Update traveler preferences anytime
-2. **API Key Configuration**: Custom Gemini API key for power users
-3. **Theme System**: Persistent light/dark mode with system preference detection
-4. **Data Control**: Granular data management with confirmation dialogs
-5. **Subscription Control**: View status, upgrade, or cancel subscriptions
-
----
+------------------------------------------------------------------------
 
 ## 🔧 Development Setup
 
-### **Prerequisites**
-- Node.js 18+
-- Expo CLI (latest version)
-- iOS Simulator (Xcode) or Android Emulator
-- Google Generative AI API key (optional for testing)
-- RevenueCat account and API keys (for subscription testing)
+### Prerequisites
 
-### **Installation**
+-   Node.js 18+
+-   npm or yarn
+-   Expo CLI
+-   Xcode (for iOS development)
+-   Android Studio (for Android development)
+
+### Installation
+
 ```bash
-# Install dependencies
+git clone https://github.com/bugrarslan/flidio.git
+cd flidio
 npm install
-
-# iOS specific setup (if testing on iOS)
-cd ios && pod install && cd ..
 ```
 
-### **Environment Setup**
-Create `.env` file in root directory:
-```env
-# Google AI Integration (Optional - users can add their own keys)
+### Environment Configuration
+
+Create environment variables in your development environment:
+
+```bash
 EXPO_PUBLIC_GOOGLE_AI_KEY=your_gemini_api_key_here
-
-# RevenueCat Configuration
-EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=your_android_key
-EXPO_PUBLIC_REVENUECAT_IOS_KEY=your_ios_key
-
-# App Configuration
-EXPO_PUBLIC_APP_VARIANT=development
+EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY=your_ios_key_here
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=your_android_key_here
 ```
 
-### **RevenueCat Setup**
-1. Create account at [RevenueCat](https://www.revenuecat.com/)
-2. Set up your app in the RevenueCat dashboard
-3. Configure products and entitlements
-4. Add API keys to environment variables
+### Running the App
 
-### **Running the App**
+**Development mode:**
 ```bash
-# Start development server
+npm start
+# or
 npx expo start
-
-# Platform-specific commands
-npx expo start --ios
-npx expo start --android
-npx expo start --web
 ```
 
-### **Building for Production**
+**Native development builds:**
 ```bash
-# Create development build
+# iOS
+npx expo run:ios
+
+# Android
+npx expo run:android
+```
+
+**Linting:**
+```bash
+npm run lint
+```
+
+------------------------------------------------------------------------
+
+## 📦 Building & Deployment
+
+Uses **EAS (Expo Application Services)** for production builds.
+
+### Initial Setup
+
+```bash
+npm install -g eas-cli
+eas login
+```
+
+### Building
+
+```bash
+# Development build
 eas build --profile development --platform all
 
-# Create production build
+# Preview build
+eas build --profile preview --platform all
+
+# Production build
 eas build --profile production --platform all
 ```
 
----
+### Submission
 
-## 🆕 Recent Updates & Features
+```bash
+# Submit to App Store
+eas submit --platform ios
 
-### **Version 2.0 Updates**
-- ✅ **Native Date Pickers**: Implemented @react-native-community/datetimepicker with platform-specific UI
-- ✅ **Subscription System**: Complete RevenueCat integration with freemium model
-- ✅ **Promotion Screen**: Beautiful upsell interface matching design specifications
-- ✅ **Conditional Access Control**: Smart feature gating based on API key OR subscription
-- ✅ **Enhanced Settings**: Pro status display, subscription management, comprehensive data control
-- ✅ **Improved UX**: Haptic feedback, loading states, error handling throughout the app
-- ✅ **Theme System**: Persistent dark/light mode with improved visual design
+# Submit to Google Play
+eas submit --platform android
+```
 
-### **Key Integrations Added**
-- **@react-native-community/datetimepicker**: Native date selection components
-- **react-native-purchases**: RevenueCat subscription management
-- **expo-haptics**: Enhanced tactile feedback system
-- **Advanced Context Management**: Comprehensive state management with proper TypeScript typing
+### EAS Configuration
 
----
+Build profiles defined in `eas.json`:
+- **development**: Development client with internal distribution
+- **preview**: Internal testing build
+- **production**: App Store/Play Store release with auto-increment version
 
-## 🕹️ Technical Evaluation
+------------------------------------------------------------------------
 
-| Feature Category            | Implementation Details & Quality                |
-|----------------------------|------------------------------------------------|
-| **TypeScript Integration** | Comprehensive typing for all props, state, API responses, and context |
-| **Database Architecture**  | Advanced SQLite operations with transactions, error handling, and data relationships |
-| **Subscription System**    | Production-ready RevenueCat integration with conditional access control |
-| **AI Service Integration** | Robust prompt engineering, response parsing, and custom API key support |
-| **Native Components**      | Platform-specific date pickers, haptic feedback, and subscription management |
-| **UI/UX Design**          | Consistent design system with NativeWind, theme support, and responsive layouts |
-| **State Management**       | Optimized Context API usage with proper re-render control and data persistence |
-| **Code Organization**      | Modular architecture with reusable components and clean separation of concerns |
-| **Error Handling**         | Comprehensive error boundaries and user-friendly error messages |
-| **Performance**           | Optimized list rendering, lazy loading, and smooth animations |
-| **Security**              | Secure API key handling and subscription validation |
+## 📄 License
 
----
+This project is proprietary software.
+All rights reserved.
+© 2025 Bugra Arslan
 
-## 🎯 Production Readiness
+------------------------------------------------------------------------
 
-### **Completed Features**
-- ✅ Complete user onboarding and profile system
-- ✅ Advanced travel planning with AI integration
-- ✅ Native subscription system with RevenueCat
-- ✅ Comprehensive settings and data management
-- ✅ Theme system with persistent preferences
-- ✅ Offline-first architecture with SQLite
-- ✅ Production-ready error handling and validation
+## 📞 Support
 
-### **Ready for App Store**
-- ✅ Native subscription integration
-- ✅ Privacy policy and terms of service
-- ✅ Proper entitlements and permissions
-- ✅ Optimized performance and user experience
-- ✅ Cross-platform compatibility (iOS/Android)
+For issues, questions, or feedback:
 
+**Email:** bugra.arslan7@outlook.com
+
+**Privacy Policy:** https://flidio.vercel.app/privacy
+
+**Terms of Service:** https://flidio.vercel.app/terms
+
+Built with ❤️ using React Native, Expo, and Google Gemini AI.
