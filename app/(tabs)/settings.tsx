@@ -1,8 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
-import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Linking,
@@ -13,9 +8,16 @@ import {
   TextInput,
   View,
 } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Purchases from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
+import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 
+
+import { getThemePalette } from "@/utils/themePalette";
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
@@ -42,7 +44,8 @@ const SUPPORT_LINKS = [
 
 const Settings = () => {
   const router = useRouter();
-  const { settings, updateSettings, saving, clearSettings } = useSettingsContext();
+  const { settings, updateSettings, saving, clearSettings } =
+    useSettingsContext();
   const {
     clearProfile,
     profile,
@@ -50,13 +53,24 @@ const Settings = () => {
     loading: profileLoading,
     saving: profileSaving,
   } = useUserProfileContext();
+  const selectedTheme = settings?.theme ?? "light";
+
+  const themePalette = useMemo(() => getThemePalette(selectedTheme), [selectedTheme]);
 
   const isDarkMode = settings?.theme === "dark";
 
-  const backgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
-  const textPrimaryClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
-  const textSecondaryClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
-  const cardClass = isDarkMode ? "bg-card-dark border-border-dark" : "bg-card-light border-border-light";
+  const backgroundClass = isDarkMode
+    ? "bg-background-dark"
+    : "bg-background-light";
+  const textPrimaryClass = isDarkMode
+    ? "text-text-primary-dark"
+    : "text-text-primary-light";
+  const textSecondaryClass = isDarkMode
+    ? "text-text-secondary-dark"
+    : "text-text-secondary-light";
+  const cardClass = isDarkMode
+    ? "bg-card-dark border-border-dark"
+    : "bg-card-light border-border-light";
   const inputSurfaceClass = isDarkMode
     ? "bg-input-background-dark border-border-dark"
     : "bg-input-background-light border-border-light";
@@ -124,14 +138,27 @@ const Settings = () => {
 
   const checkSubscriptionStatus = async () => {
     try {
-      setSubscriptionStatus(prev => ({ ...prev, loading: true, error: null }));
+      setSubscriptionStatus((prev) => ({
+        ...prev,
+        loading: true,
+        error: null,
+      }));
       const customerInfo = await Purchases.getCustomerInfo();
-      const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
-                                customerInfo.activeSubscriptions.includes("flidio_monthly");
-      setSubscriptionStatus({ hasProSubscription, loading: false, error: null });
+      const hasProSubscription =
+        typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+        customerInfo.activeSubscriptions.includes("flidio_monthly");
+      setSubscriptionStatus({
+        hasProSubscription,
+        loading: false,
+        error: null,
+      });
     } catch (error) {
       console.error("Failed to check subscription status:", error);
-      setSubscriptionStatus({ hasProSubscription: false, loading: false, error: "Failed to check subscription" });
+      setSubscriptionStatus({
+        hasProSubscription: false,
+        loading: false,
+        error: "Failed to check subscription",
+      });
     }
   };
 
@@ -150,7 +177,10 @@ const Settings = () => {
   const handleSaveApiKey = useCallback(async () => {
     const trimmedKey = apiKey.trim();
     if (!trimmedKey) {
-      Alert.alert("API key required", "Paste your Google Generative AI key before saving.");
+      Alert.alert(
+        "API key required",
+        "Paste your Google Generative AI key before saving."
+      );
       return;
     }
 
@@ -158,10 +188,16 @@ const Settings = () => {
 
     try {
       await updateSettings({ aiApiKey: trimmedKey });
-      Alert.alert("API key saved", "You're ready to generate AI travel itineraries.");
+      Alert.alert(
+        "API key saved",
+        "You're ready to generate AI travel itineraries."
+      );
     } catch (error) {
       console.error("Failed to save settings", error);
-      Alert.alert("Couldn't save API key", "Please double-check the value and try again.");
+      Alert.alert(
+        "Couldn't save API key",
+        "Please double-check the value and try again."
+      );
     }
   }, [apiKey, updateSettings]);
 
@@ -177,7 +213,10 @@ const Settings = () => {
       setShowApiKey(false);
       if (hasStoredApiKey) {
         await updateSettings({ aiApiKey: "" });
-        Alert.alert("API key removed", "You can add a new Gemini API key at any time.");
+        Alert.alert(
+          "API key removed",
+          "You can add a new Gemini API key at any time."
+        );
       }
     } catch (error) {
       console.error("Failed to remove API key", error);
@@ -196,12 +235,17 @@ const Settings = () => {
 
       try {
         await action();
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        );
         Alert.alert(success.title, success.message);
       } catch (error) {
         console.error(`[settings] Failed to execute ${key} data action`, error);
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert("Couldn't complete action", "Please try again in a moment.");
+        Alert.alert(
+          "Couldn't complete action",
+          "Please try again in a moment."
+        );
       } finally {
         setPendingAction(null);
       }
@@ -227,7 +271,8 @@ const Settings = () => {
               },
               {
                 title: "Profile & settings cleared",
-                message: "Your traveler profile and app preferences have been reset.",
+                message:
+                  "Your traveler profile and app preferences have been reset.",
               }
             ),
         },
@@ -253,7 +298,8 @@ const Settings = () => {
               },
               {
                 title: "Itineraries deleted",
-                message: "All saved itineraries have been removed from this device.",
+                message:
+                  "All saved itineraries have been removed from this device.",
               }
             ),
         },
@@ -291,7 +337,10 @@ const Settings = () => {
   const handleOpenLink = async (url: string) => {
     await Haptics.selectionAsync();
     Linking.openURL(url).catch(() => {
-      Alert.alert("Something went wrong", "Could not open the requested link. Please try again later.");
+      Alert.alert(
+        "Something went wrong",
+        "Could not open the requested link. Please try again later."
+      );
     });
   };
 
@@ -300,35 +349,39 @@ const Settings = () => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       const restoredInfo = await Purchases.restorePurchases();
 
-      const isPremium = typeof restoredInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
-                        restoredInfo.activeSubscriptions.includes("flidio_monthly");
+      const isPremium =
+        typeof restoredInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
+        restoredInfo.activeSubscriptions.includes("flidio_monthly");
 
       if (isPremium) {
-        console.log('Purchases restored successfully. User is now premium.');
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        console.log("Purchases restored successfully. User is now premium.");
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        );
         Alert.alert(
-          'Purchases Restored',
-          'Your purchases have been restored successfully. Thank you!',
-          [{ text: 'OK', onPress: () => checkSubscriptionStatus() }]
+          "Purchases Restored",
+          "Your purchases have been restored successfully. Thank you!",
+          [{ text: "OK", onPress: () => checkSubscriptionStatus() }]
         );
       } else {
-        console.log('Restore process completed, but no active subscription found.');
+        console.log(
+          "Restore process completed, but no active subscription found."
+        );
         Alert.alert(
-          'No Purchases Found',
-          'No active purchase found to restore.',
-          [{ text: 'OK' }]
+          "No Purchases Found",
+          "No active purchase found to restore.",
+          [{ text: "OK" }]
         );
       }
 
       return restoredInfo;
-
     } catch (e) {
-      console.error('An error occurred while restoring purchases:', e);
+      console.error("An error occurred while restoring purchases:", e);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
-        'Restore Failed',
-        'An issue occurred while restoring your purchases. Please try again later.',
-        [{ text: 'OK' }]
+        "Restore Failed",
+        "An issue occurred while restoring your purchases. Please try again later.",
+        [{ text: "OK" }]
       );
     }
   };
@@ -345,50 +398,64 @@ const Settings = () => {
       >
         {/* header */}
         <View className="mt-6">
-          <Text className={`text-3xl font-bold ${textPrimaryClass}`}>Settings</Text>
+          <Text className={`text-3xl font-bold ${textPrimaryClass}`}>
+            Settings
+          </Text>
           <Text className={`mt-2 text-base ${textSecondaryClass}`}>
-            Tune Flidio to match your travel workflow, update AI access, and manage your data.
+            Tune Flidio to match your travel workflow, update AI access, and
+            manage your data.
           </Text>
         </View>
 
         <View className="gap-4 mt-8 space-y-6">
           {/* Pro subscription status */}
-          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+          <View
+            className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}
+          >
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
-                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Pro features</Text>
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>
+                  Pro features
+                </Text>
                 <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
-                  {subscriptionStatus.loading 
+                  {subscriptionStatus.loading
                     ? "Checking subscription status..."
                     : subscriptionStatus.hasProSubscription
-                    ? "You have access to all premium features including unlimited AI itineraries."
-                    : "Upgrade to Pro for unlimited AI-powered travel itineraries and premium features."
-                  }
+                      ? "You have access to all premium features including unlimited AI itineraries."
+                      : "Upgrade to Pro for unlimited AI-powered travel itineraries and premium features."}
                 </Text>
               </View>
-              <View className={`p-3 rounded-full ${
-                subscriptionStatus.loading 
-                  ? isDarkMode ? "bg-gray-500/15" : "bg-gray-500/10"
-                  : subscriptionStatus.hasProSubscription
-                  ? isDarkMode ? "bg-green-500/15" : "bg-green-500/10"
-                  : isDarkMode ? "bg-orange-500/15" : "bg-orange-500/10"
-              }`}>
-                <Ionicons 
+              <View
+                className={`p-3 rounded-full ${
+                  subscriptionStatus.loading
+                    ? isDarkMode
+                      ? "bg-gray-500/15"
+                      : "bg-gray-500/10"
+                    : subscriptionStatus.hasProSubscription
+                      ? isDarkMode
+                        ? "bg-green-500/15"
+                        : "bg-green-500/10"
+                      : isDarkMode
+                        ? "bg-orange-500/15"
+                        : "bg-orange-500/10"
+                }`}
+              >
+                <Ionicons
                   name={
-                    subscriptionStatus.loading 
+                    subscriptionStatus.loading
                       ? "time-outline"
                       : subscriptionStatus.hasProSubscription
-                      ? "checkmark-circle-outline"
-                      : "star-outline"
-                  } 
-                  size={26} 
+                        ? "checkmark-circle-outline"
+                        : "star-outline"
+                  }
+                  size={26}
                   color={
-                    subscriptionStatus.loading 
+                    subscriptionStatus.loading
                       ? iconMutedColor
                       : subscriptionStatus.hasProSubscription
-                      ? "#22c55e"
-                      : "#f59e0b"
-                  } 
+                        ? "#22c55e"
+                        : "#f59e0b"
+                  }
                 />
               </View>
             </View>
@@ -396,36 +463,72 @@ const Settings = () => {
             <View className="mt-5">
               {subscriptionStatus.loading ? (
                 <View className="flex-row items-center gap-3">
-                  <View className={`p-3 rounded-full ${isDarkMode ? "bg-gray-500/15" : "bg-gray-500/10"}`}>
-                    <Ionicons name="hourglass-outline" size={18} color={iconMutedColor} />
+                  <View
+                    className={`p-3 rounded-full ${isDarkMode ? "bg-gray-500/15" : "bg-gray-500/10"}`}
+                  >
+                    <Ionicons
+                      name="hourglass-outline"
+                      size={18}
+                      color={iconMutedColor}
+                    />
                   </View>
-                  <Text className={`text-sm ${textSecondaryClass}`}>Verifying subscription status...</Text>
+                  <Text className={`text-sm ${textSecondaryClass}`}>
+                    Verifying subscription status...
+                  </Text>
                 </View>
               ) : subscriptionStatus.error ? (
                 <View className="flex-row items-center gap-3">
-                  <View className={`p-3 rounded-full ${isDarkMode ? "bg-red-500/15" : "bg-red-500/10"}`}>
-                    <Ionicons name="warning-outline" size={18} color={iconDangerColor} />
+                  <View
+                    className={`p-3 rounded-full ${isDarkMode ? "bg-red-500/15" : "bg-red-500/10"}`}
+                  >
+                    <Ionicons
+                      name="warning-outline"
+                      size={18}
+                      color={iconDangerColor}
+                    />
                   </View>
-                  <Text className={`text-sm ${textSecondaryClass}`}>{subscriptionStatus.error}</Text>
+                  <Text className={`text-sm ${textSecondaryClass}`}>
+                    {subscriptionStatus.error}
+                  </Text>
                 </View>
               ) : subscriptionStatus.hasProSubscription ? (
                 <View className="gap-3">
                   <View className="flex-row items-center gap-3">
-                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-green-500/15" : "bg-green-500/10"}`}>
-                      <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                    <View
+                      className={`p-3 rounded-full ${isDarkMode ? "bg-green-500/15" : "bg-green-500/10"}`}
+                    >
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={18}
+                        color="#22c55e"
+                      />
                     </View>
                     <View className="flex-1">
-                      <Text className={`text-sm font-semibold ${textPrimaryClass}`}>Pro subscription active</Text>
-                      <Text className={`text-xs ${textSecondaryClass}`}>Unlimited AI itineraries and premium features</Text>
+                      <Text
+                        className={`text-sm font-semibold ${textPrimaryClass}`}
+                      >
+                        Pro subscription active
+                      </Text>
+                      <Text className={`text-xs ${textSecondaryClass}`}>
+                        Unlimited AI itineraries and premium features
+                      </Text>
                     </View>
                   </View>
                   <View className="flex-row items-center gap-3">
-                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
-                      <Ionicons name="sparkles" size={18} color={iconAccentColor} />
+                    <View
+                      className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}
+                    >
+                      <Ionicons
+                        name="sparkles"
+                        size={18}
+                        color={iconAccentColor}
+                      />
                     </View>
-                    <Text className={`text-sm ${textSecondaryClass}`}>All premium features unlocked</Text>
+                    <Text className={`text-sm ${textSecondaryClass}`}>
+                      All premium features unlocked
+                    </Text>
                   </View>
-                  
+
                   {/* Cancel Subscription Button */}
                   <Pressable
                     onPress={async () => {
@@ -440,7 +543,9 @@ const Settings = () => {
                             style: "destructive",
                             onPress: async () => {
                               try {
-                                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                                await Haptics.impactAsync(
+                                  Haptics.ImpactFeedbackStyle.Medium
+                                );
                                 // This will open the subscription management in the App Store/Play Store
                                 await Purchases.showManageSubscriptions();
                                 // Refresh subscription status after user returns
@@ -448,25 +553,34 @@ const Settings = () => {
                                   checkSubscriptionStatus();
                                 }, 1000);
                               } catch (error) {
-                                console.error("Failed to show manage subscriptions:", error);
+                                console.error(
+                                  "Failed to show manage subscriptions:",
+                                  error
+                                );
                                 Alert.alert(
                                   "Couldn't open subscription settings",
                                   "Please go to your device's App Store to manage subscriptions."
                                 );
                               }
-                            }
-                          }
+                            },
+                          },
                         ]
                       );
                     }}
                     className={`flex-row items-center justify-center gap-2 px-4 py-2.5 mt-3 rounded-full border ${
-                      isDarkMode 
-                        ? "border-red-500/30 bg-red-500/10" 
+                      isDarkMode
+                        ? "border-red-500/30 bg-red-500/10"
                         : "border-red-500/20 bg-red-50"
                     }`}
                   >
-                    <Ionicons name="close-circle-outline" size={16} color={iconDangerColor} />
-                    <Text className={`text-sm font-medium ${isDarkMode ? "text-red-400" : "text-red-600"}`}>
+                    <Ionicons
+                      name="close-circle-outline"
+                      size={16}
+                      color={iconDangerColor}
+                    />
+                    <Text
+                      className={`text-sm font-medium ${isDarkMode ? "text-red-400" : "text-red-600"}`}
+                    >
                       Manage Subscription
                     </Text>
                   </Pressable>
@@ -474,12 +588,20 @@ const Settings = () => {
               ) : (
                 <View className="gap-3">
                   <View className="flex-row items-center gap-3">
-                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-orange-500/15" : "bg-orange-500/10"}`}>
+                    <View
+                      className={`p-3 rounded-full ${isDarkMode ? "bg-orange-500/15" : "bg-orange-500/10"}`}
+                    >
                       <Ionicons name="star-outline" size={18} color="#f59e0b" />
                     </View>
                     <View className="flex-1">
-                      <Text className={`text-sm font-semibold ${textPrimaryClass}`}>Free plan</Text>
-                      <Text className={`text-xs ${textSecondaryClass}`}>Limited features • Upgrade for unlimited access</Text>
+                      <Text
+                        className={`text-sm font-semibold ${textPrimaryClass}`}
+                      >
+                        Free plan
+                      </Text>
+                      <Text className={`text-xs ${textSecondaryClass}`}>
+                        Limited features • Upgrade for unlimited access
+                      </Text>
                     </View>
                   </View>
                   <Pressable
@@ -490,20 +612,28 @@ const Settings = () => {
                     className="flex-row items-center justify-center gap-2 px-5 py-3 mt-3 rounded-full bg-primary-600"
                   >
                     <Ionicons name="arrow-up-outline" size={18} color="white" />
-                    <Text className="text-sm font-semibold text-white">Upgrade to Pro</Text>
+                    <Text className="text-sm font-semibold text-white">
+                      Upgrade to Pro
+                    </Text>
                   </Pressable>
-                  
+
                   {/* Restore Purchases Button */}
                   <Pressable
                     onPress={handleRestorePurchases}
                     className={`flex-row items-center justify-center gap-2 px-4 py-2.5 mt-2 rounded-full border ${
-                      isDarkMode 
-                        ? "border-primary-500/30 bg-primary-500/10" 
+                      isDarkMode
+                        ? "border-primary-500/30 bg-primary-500/10"
                         : "border-primary-500/20 bg-primary-50"
                     }`}
                   >
-                    <Ionicons name="refresh-outline" size={16} color={iconAccentColor} />
-                    <Text className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-primary-600"}`}>
+                    <Ionicons
+                      name="refresh-outline"
+                      size={16}
+                      color={iconAccentColor}
+                    />
+                    <Text
+                      className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-primary-600"}`}
+                    >
                       Restore Purchases
                     </Text>
                   </Pressable>
@@ -513,32 +643,54 @@ const Settings = () => {
           </View>
 
           {/* Traveler profile */}
-          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+          <View
+            className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}
+          >
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
-                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Traveler profile</Text>
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>
+                  Traveler profile
+                </Text>
                 <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
-                  Keep your preferences fresh so AI itineraries feel bespoke to you.
+                  Keep your preferences fresh so AI itineraries feel bespoke to
+                  you.
                 </Text>
               </View>
-              <Ionicons name="person-circle-outline" size={26} color={iconAccentColor} />
+              <Ionicons
+                name="person-circle-outline"
+                size={26}
+                color={iconAccentColor}
+              />
             </View>
 
             <View className="gap-4 mt-5">
               {profileLoading ? (
-                <Text className={`text-sm ${textSecondaryClass}`}>Loading profile details...</Text>
+                <Text className={`text-sm ${textSecondaryClass}`}>
+                  Loading profile details...
+                </Text>
               ) : hasProfile ? (
                 <View className="gap-4">
                   <View className="flex-row items-start gap-3">
-                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
-                      <Ionicons name="id-card-outline" size={18} color={iconAccentColor} />
+                    <View
+                      className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}
+                    >
+                      <Ionicons
+                        name="id-card-outline"
+                        size={18}
+                        color={iconAccentColor}
+                      />
                     </View>
                     <View className="flex-1">
-                      <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                      <Text
+                        className={`text-base font-semibold ${textPrimaryClass}`}
+                      >
                         {profile?.name}
                       </Text>
                       <Text className={`mt-0.5 text-sm ${textSecondaryClass}`}>
-                        {[profile?.location, profile?.age ? `${profile.age} yrs` : null]
+                        {[
+                          profile?.location,
+                          profile?.age ? `${profile.age} yrs` : null,
+                        ]
                           .filter(Boolean)
                           .join(" • ")}
                       </Text>
@@ -546,23 +698,43 @@ const Settings = () => {
                   </View>
 
                   <View className="flex-row items-start gap-3">
-                    <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
-                      <Ionicons name="compass-outline" size={18} color={iconAccentColor} />
+                    <View
+                      className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}
+                    >
+                      <Ionicons
+                        name="compass-outline"
+                        size={18}
+                        color={iconAccentColor}
+                      />
                     </View>
                     <View className="flex-1">
-                      <Text className={`text-xs font-semibold tracking-wide uppercase ${textSecondaryClass}`}>
+                      <Text
+                        className={`text-xs font-semibold tracking-wide uppercase ${textSecondaryClass}`}
+                      >
                         Travel styles
                       </Text>
-                      <Text className={`mt-1 text-sm ${textSecondaryClass}`}>{profileTravelStylesLabel}</Text>
+                      <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
+                        {profileTravelStylesLabel}
+                      </Text>
                     </View>
                   </View>
 
                   {profile?.bio ? (
                     <View className="flex-row items-start gap-3">
-                      <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
-                        <Ionicons name="sparkles-outline" size={18} color={iconAccentColor} />
+                      <View
+                        className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}
+                      >
+                        <Ionicons
+                          name="sparkles-outline"
+                          size={18}
+                          color={iconAccentColor}
+                        />
                       </View>
-                      <Text className={`flex-1 text-sm leading-5 ${textSecondaryClass}`}>{profile.bio}</Text>
+                      <Text
+                        className={`flex-1 text-sm leading-5 ${textSecondaryClass}`}
+                      >
+                        {profile.bio}
+                      </Text>
                     </View>
                   ) : null}
 
@@ -576,15 +748,24 @@ const Settings = () => {
                 </View>
               ) : (
                 <View className="flex-row items-start gap-3">
-                  <View className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}>
-                    <Ionicons name="trail-sign-outline" size={18} color={iconAccentColor} />
+                  <View
+                    className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/15" : "bg-primary-500/10"}`}
+                  >
+                    <Ionicons
+                      name="trail-sign-outline"
+                      size={18}
+                      color={iconAccentColor}
+                    />
                   </View>
                   <View className="flex-1">
-                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                    <Text
+                      className={`text-base font-semibold ${textPrimaryClass}`}
+                    >
                       Build your traveler profile
                     </Text>
                     <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
-                      Share a few details to help Flidio curate adventures that match your vibe.
+                      Share a few details to help Flidio curate adventures that
+                      match your vibe.
                     </Text>
                   </View>
                 </View>
@@ -610,28 +791,43 @@ const Settings = () => {
                 {hasProfile ? "Update profile" : "Create profile"}
               </Text>
             </Pressable>
-          </View>          
+          </View>
 
           {/* Google AI access */}
-          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+          <View
+            className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}
+          >
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Google AI access</Text>
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>
+                  Google AI access
+                </Text>
                 <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
-                  Add your Google Generative AI key so we can craft itineraries in real time.
+                  Add your Google Generative AI key so we can craft itineraries
+                  in real time.
                 </Text>
               </View>
-              <Ionicons name="sparkles-outline" size={24} color={iconAccentColor} />
+              <Ionicons
+                name="sparkles-outline"
+                size={24}
+                color={iconAccentColor}
+              />
             </View>
 
             <View className="mt-4">
-              <Text className={`text-xs font-semibold tracking-wide uppercase ${textSecondaryClass}`}>
+              <Text
+                className={`text-xs font-semibold tracking-wide uppercase ${textSecondaryClass}`}
+              >
                 API key
               </Text>
               <View
                 className={`flex-row items-center gap-3 px-4 py-3 mt-2 border rounded-2xl ${inputSurfaceClass}`}
               >
-                <Ionicons name="key-outline" size={20} color={iconAccentColor} />
+                <Ionicons
+                  name="key-outline"
+                  size={20}
+                  color={iconAccentColor}
+                />
                 <TextInput
                   value={apiKey}
                   onChangeText={setApiKey}
@@ -651,7 +847,11 @@ const Settings = () => {
                     accessibilityLabel="Remove API key"
                     className={`p-1.5 rounded-full ${isDarkMode ? "bg-red-500/20" : "bg-red-500/10"}`}
                   >
-                    <Ionicons name="close-circle" size={18} color={iconDangerColor} />
+                    <Ionicons
+                      name="close-circle"
+                      size={18}
+                      color={iconDangerColor}
+                    />
                   </Pressable>
                 ) : null}
                 <Pressable
@@ -660,7 +860,9 @@ const Settings = () => {
                     setShowApiKey((prev) => !prev);
                   }}
                   accessibilityRole="button"
-                  accessibilityLabel={showApiKey ? "Hide API key" : "Show API key"}
+                  accessibilityLabel={
+                    showApiKey ? "Hide API key" : "Show API key"
+                  }
                 >
                   <Ionicons
                     name={showApiKey ? "eye-off-outline" : "eye-outline"}
@@ -674,7 +876,9 @@ const Settings = () => {
                 onPress={handleSaveApiKey}
                 disabled={!apiKey.trim() || saving}
                 className={`mt-4 flex-row items-center justify-center gap-2 rounded-full px-5 py-3 ${
-                  apiKey.trim() && !saving ? "bg-primary-600" : "bg-primary-500/40"
+                  apiKey.trim() && !saving
+                    ? "bg-primary-600"
+                    : "bg-primary-500/40"
                 }`}
               >
                 <Ionicons name="cloud-upload-outline" size={18} color="white" />
@@ -688,11 +892,17 @@ const Settings = () => {
           </View>
 
           {/* theme */}
-          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
+          <View
+            className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}
+          >
             <View className="flex-row items-center justify-between">
               <View className="flex-1 mr-4">
-                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Dark Theme</Text>
-                <Text className={`flex-shrink mt-1 text-sm ${textSecondaryClass}`}>
+                <Text className={`text-lg font-semibold ${textPrimaryClass}`}>
+                  Dark Theme
+                </Text>
+                <Text
+                  className={`flex-shrink mt-1 text-sm ${textSecondaryClass}`}
+                >
                   Switch between light and dark to match your environment.
                 </Text>
               </View>
@@ -708,10 +918,15 @@ const Settings = () => {
           </View>
 
           {/* Data control */}
-          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
-            <Text className={`text-lg font-semibold ${textPrimaryClass}`}>Data control</Text>
+          <View
+            className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}
+          >
+            <Text className={`text-lg font-semibold ${textPrimaryClass}`}>
+              Data control
+            </Text>
             <Text className={`mt-1 text-sm ${textSecondaryClass}`}>
-              Manage the travel plans and profile details stored locally on this device.
+              Manage the travel plans and profile details stored locally on this
+              device.
             </Text>
 
             <View className="gap-2 mt-5 space-y-3">
@@ -730,11 +945,19 @@ const Settings = () => {
                   <View
                     className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/20" : "bg-primary-500/10"}`}
                   >
-                    <Ionicons name="people-outline" size={20} color={iconAccentColor} />
+                    <Ionicons
+                      name="people-outline"
+                      size={20}
+                      color={iconAccentColor}
+                    />
                   </View>
                   <View className="flex-1 mr-2">
-                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
-                      {pendingAction === "profile-settings" ? "Clearing..." : "Clear profile & settings"}
+                    <Text
+                      className={`text-base font-semibold ${textPrimaryClass}`}
+                    >
+                      {pendingAction === "profile-settings"
+                        ? "Clearing..."
+                        : "Clear profile & settings"}
                     </Text>
                     <Text className={`text-xs ${textSecondaryClass}`}>
                       Removes saved traveler profile and app preferences.
@@ -744,7 +967,11 @@ const Settings = () => {
                 <Ionicons
                   name="chevron-forward"
                   size={18}
-                  color={pendingAction === "profile-settings" ? iconAccentColor : iconMutedColor}
+                  color={
+                    pendingAction === "profile-settings"
+                      ? iconAccentColor
+                      : iconMutedColor
+                  }
                 />
               </Pressable>
 
@@ -761,11 +988,19 @@ const Settings = () => {
               >
                 <View className="flex-row items-center flex-1 gap-3">
                   <View className={`p-3 rounded-full ${iconDangerBgClass}`}>
-                    <Ionicons name="map-outline" size={20} color={iconDangerColor} />
+                    <Ionicons
+                      name="map-outline"
+                      size={20}
+                      color={iconDangerColor}
+                    />
                   </View>
                   <View className="flex-1 mr-2">
-                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
-                      {pendingAction === "itineraries" ? "Deleting..." : "Delete itineraries"}
+                    <Text
+                      className={`text-base font-semibold ${textPrimaryClass}`}
+                    >
+                      {pendingAction === "itineraries"
+                        ? "Deleting..."
+                        : "Delete itineraries"}
                     </Text>
                     <Text className={`text-xs ${textSecondaryClass}`}>
                       Deletes the Flidio travel database and all saved trips.
@@ -775,7 +1010,11 @@ const Settings = () => {
                 <Ionicons
                   name="chevron-forward"
                   size={18}
-                  color={pendingAction === "itineraries" ? iconDangerColor : iconMutedColor}
+                  color={
+                    pendingAction === "itineraries"
+                      ? iconDangerColor
+                      : iconMutedColor
+                  }
                 />
               </Pressable>
 
@@ -792,10 +1031,16 @@ const Settings = () => {
               >
                 <View className="flex-row items-center flex-1 gap-3">
                   <View className={`p-3 rounded-full ${iconDangerBgClass}`}>
-                    <Ionicons name="trash-outline" size={20} color={iconDangerColor} />
+                    <Ionicons
+                      name="trash-outline"
+                      size={20}
+                      color={iconDangerColor}
+                    />
                   </View>
                   <View className="flex-1 mr-2">
-                    <Text className={`text-base font-semibold ${textPrimaryClass}`}>
+                    <Text
+                      className={`text-base font-semibold ${textPrimaryClass}`}
+                    >
                       {pendingAction === "all" ? "Wiping..." : "Clear all data"}
                     </Text>
                     <Text className={`text-xs ${textSecondaryClass}`}>
@@ -806,22 +1051,38 @@ const Settings = () => {
                 <Ionicons
                   name="chevron-forward"
                   size={18}
-                  color={pendingAction === "all" ? iconDangerColor : iconMutedColor}
+                  color={
+                    pendingAction === "all" ? iconDangerColor : iconMutedColor
+                  }
                 />
               </Pressable>
             </View>
           </View>
 
           {/* About Flidio */}
-          <View className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}>
-            <Text className={`text-lg font-semibold ${textPrimaryClass}`}>About Flidio</Text>
+          <View
+            className={`p-6 shadow-lg rounded-3xl border shadow-primary-900/5 ${cardClass}`}
+          >
+            <Text className={`text-lg font-semibold ${textPrimaryClass}`}>
+              About Flidio
+            </Text>
             <View className="gap-2 mt-4 space-y-3">
-              <View className={`flex-row items-center justify-between px-4 py-3 border rounded-2xl ${cardClass}`}>
+              <View
+                className={`flex-row items-center justify-between px-4 py-3 border rounded-2xl ${cardClass}`}
+              >
                 <View className="flex-row items-center gap-3">
-                  <Ionicons name="information-circle-outline" size={20} color={iconAccentColor} />
-                  <Text className={`text-base font-medium ${textPrimaryClass}`}>Version</Text>
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={20}
+                    color={iconAccentColor}
+                  />
+                  <Text className={`text-base font-medium ${textPrimaryClass}`}>
+                    Version
+                  </Text>
                 </View>
-                <Text className={`text-sm font-semibold ${textSecondaryClass}`}>v{appVersion}</Text>
+                <Text className={`text-sm font-semibold ${textSecondaryClass}`}>
+                  v{appVersion}
+                </Text>
               </View>
 
               {SUPPORT_LINKS.map((link) => (
@@ -836,9 +1097,17 @@ const Settings = () => {
                       size={20}
                       color={iconAccentColor}
                     />
-                    <Text className={`text-base font-medium ${textPrimaryClass}`}>{link.label}</Text>
+                    <Text
+                      className={`text-base font-medium ${textPrimaryClass}`}
+                    >
+                      {link.label}
+                    </Text>
                   </View>
-                  <Ionicons name="open-outline" size={18} color={iconMutedColor} />
+                  <Ionicons
+                    name="open-outline"
+                    size={18}
+                    color={iconMutedColor}
+                  />
                 </Pressable>
               ))}
             </View>

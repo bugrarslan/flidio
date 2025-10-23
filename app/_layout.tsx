@@ -8,31 +8,43 @@ import { UserProfileProvider } from "@/context/UserProfileContext";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import Purchases from "react-native-purchases";
+import {
+  SubscriptionProvider,
+  useSubscriptionContext,
+} from "@/context/SubscriptionContext";
 
 const RootNavigator = () => {
   const router = useRouter();
-  const { loading, shouldShowOnboarding, updateSettings } = useSettingsContext();
+  const {
+    loading: settingsLoading,
+    shouldShowOnboarding,
+    updateSettings,
+    settings,
+  } = useSettingsContext();
+  const { loading: subscriptionLoading, isPro } = useSubscriptionContext();
   const previousTargetRef = useRef<string | null>(null);
+  const hasConfiguredPurchasesRef = useRef(false);
+  const isTrialVersion = settings?.isTrialVersion ?? true;
 
+  // Configure RevenueCat for both iOS and Android
   useEffect(() => {
-    if (loading) {
+    if (hasConfiguredPurchasesRef.current) {
       return;
     }
 
-    if (Platform.OS === "ios") {
-      if (!process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY) {
-        console.log(
-          "RevenueCat Apple API Key is not set in environment variables."
-        );
-        return;
-      }
-      Purchases.configure({
-        apiKey: process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY,
-      });
+    void configureRevenueCat();
+  }, []);
+
+  useEffect(() => {
+    if (settingsLoading || subscriptionLoading) {
+      return;
     }
 
-    getCustomerInfo();
+    if (isPro && isTrialVersion) {
+      void updateSettings({ isTrialVersion: false });
+    }
 
     const targetRoute = shouldShowOnboarding ? "/onboardingScreen" : "/home";
 
@@ -42,21 +54,69 @@ const RootNavigator = () => {
 
     previousTargetRef.current = targetRoute;
     router.replace(targetRoute);
-  }, [loading, shouldShowOnboarding, router]);
+  }, [
+    settingsLoading,
+    subscriptionLoading,
+    shouldShowOnboarding,
+    router,
+    isPro,
+    updateSettings,
+    isTrialVersion,
+  ]);
 
-  async function getCustomerInfo() {
-    const customerInfo = await Purchases.getCustomerInfo();
-    const hasProSubscription = typeof customerInfo.entitlements.active["Flidio Pro"] !== "undefined" ||
-                                 customerInfo.activeSubscriptions.includes("flidio_monthly");
-    if (hasProSubscription) {
-      console.log("User has an active Pro subscription.");
-      try {
-        await updateSettings({ isTrialVersion: false });
-      } catch (error) {
-        console.error("[settings] Failed to update Pro status", error);
+  const configureRevenueCat = async () => {
+    try {
+      // Haptic feedback: Start loading
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      let apiKey: string | undefined;
+
+      if (Platform.OS === "ios") {
+        apiKey = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+        if (!apiKey) {
+          console.warn(
+            "RevenueCat iOS API Key is not set in environment variables."
+          );
+          hasConfiguredPurchasesRef.current = true;
+          return;
+        }
+      } else if (Platform.OS === "android") {
+        apiKey = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+        if (!apiKey) {
+          console.warn(
+            "RevenueCat Android API Key is not set in environment variables."
+          );
+          hasConfiguredPurchasesRef.current = true;
+          return;
+        }
+      } else {
+        // Web or other platforms - skip configuration
+        hasConfiguredPurchasesRef.current = true;
+        return;
       }
+
+      Purchases.configure({
+        apiKey,
+      });
+
+      // Set debug logs in development
+      if (__DEV__) {
+        Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
+      }
+
+      hasConfiguredPurchasesRef.current = true;
+      console.log(`RevenueCat configured successfully for ${Platform.OS}`);
+
+      // Haptic feedback: Success
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error("Failed to configure RevenueCat:", error);
+      hasConfiguredPurchasesRef.current = true; // Mark as attempted to avoid infinite retries
+
+      // Haptic feedback: Error
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
-  }
+  };
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -71,7 +131,10 @@ const RootNavigator = () => {
         options={{ presentation: "modal" }}
       />
       <Stack.Screen name="onboardingScreen" />
-      <Stack.Screen name="promotionScreen" options={{ presentation: "modal" }} />
+      <Stack.Screen
+        name="promotionScreen"
+        options={{ presentation: "modal" }}
+      />
     </Stack>
   );
 };
@@ -80,7 +143,9 @@ export default function RootLayout() {
   return (
     <SettingsProvider>
       <UserProfileProvider>
-        <RootNavigator />
+        <SubscriptionProvider>
+          <RootNavigator />
+        </SubscriptionProvider>
       </UserProfileProvider>
     </SettingsProvider>
   );
