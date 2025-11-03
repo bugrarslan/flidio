@@ -24,7 +24,6 @@ import { StatusBar } from "expo-status-bar";
 import { useSubscriptionContext } from "@/context/SubscriptionContext";
 import {
   SettingsCard,
-  SettingsCardItem,
   SettingsCardAction,
   SettingsCardListItem,
 } from "@/components/ui/SettingsCard";

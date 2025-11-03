@@ -32,6 +32,7 @@ module.exports = {
             secondary: "#475569",
             accent: "#2563eb",
             accentMuted: "rgba(37, 99, 235, 0.75)",
+            white: "#ffffff",
           },
           icon: {
             accent: "#2563eb",
@@ -39,6 +40,12 @@ module.exports = {
             danger: "#dc2626",
             success: "#22c55e",
             warning: "#f59e0b",
+            tip: "#bfdbfe",
+          },
+          button: {
+            primary: "#2563eb",
+            secondary: "#ffffff",
+            secondaryBorder: "rgba(37, 99, 235, 0.3)",
           },
           status: {
             success: {
@@ -50,11 +57,11 @@ module.exports = {
               text: "#f59e0b",
             },
             danger: {
-              bg: "rgba(220, 38, 38, 0.1)",
+              bg: "rgba(220, 38, 38, 0.15)",
               text: "#dc2626",
             },
             info: {
-              bg: "rgba(59, 130, 246, 0.1)",
+              bg: "rgba(37, 99, 235, 0.1)",
               text: "#2563eb",
             },
             gray: {
@@ -66,6 +73,13 @@ module.exports = {
             trackOff: "#cbd5f5",
             trackOn: "#2563eb",
             thumb: "#f8fafc",
+          },
+          tip: {
+            background: "rgba(30, 58, 138, 0.9)",
+            border: "rgba(30, 58, 138, 0.6)",
+            heading: "#ffffff",
+            body: "rgba(239, 246, 255, 0.9)",
+            link: "#eff6ff",
           },
         },
         dark: {
@@ -83,6 +97,7 @@ module.exports = {
             secondary: "#94a3b8",
             accent: "#93c5fd",
             accentMuted: "rgba(147, 197, 253, 0.85)",
+            white: "#ffffff",
           },
           icon: {
             accent: "#60a5fa",
@@ -90,6 +105,12 @@ module.exports = {
             danger: "#f87171",
             success: "#22c55e",
             warning: "#f59e0b",
+            tip: "#93c5fd",
+          },
+          button: {
+            primary: "#2563eb",
+            secondary: "rgba(15, 23, 42, 0.9)",
+            secondaryBorder: "rgba(94, 106, 128, 0.35)",
           },
           status: {
             success: {
@@ -117,6 +138,13 @@ module.exports = {
             trackOff: "#1f2937",
             trackOn: "#2563eb",
             thumb: "#f1f5f9",
+          },
+          tip: {
+            background: "rgba(15, 23, 42, 0.9)",
+            border: "rgba(94, 106, 128, 0.35)",
+            heading: "#e2e8f0",
+            body: "#94a3b8",
+            link: "#e2e8f0",
           },
         },
       },

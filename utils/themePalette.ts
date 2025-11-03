@@ -9,6 +9,7 @@ export type ThemePalette = {
   textMuted: string;
   textAccent: string;
   textAccentMuted: string;
+  textWhite: string;
   inputBackground: string;
   inputPlaceholder: string;
   iconAccent: string;
@@ -16,6 +17,10 @@ export type ThemePalette = {
   iconDanger: string;
   iconSuccess: string;
   iconWarning: string;
+  iconTip: string;
+  buttonPrimary: string;
+  buttonSecondary: string;
+  buttonSecondaryBorder: string;
   statusSuccessBg: string;
   statusSuccessText: string;
   statusWarningBg: string;
@@ -29,6 +34,11 @@ export type ThemePalette = {
   switchTrackOff: string;
   switchTrackOn: string;
   switchThumb: string;
+  tipBackground: string;
+  tipBorder: string;
+  tipHeading: string;
+  tipBody: string;
+  tipLink: string;
 };
 
 export function getThemePalette(theme?: string): ThemePalette {
@@ -46,6 +56,7 @@ export function getThemePalette(theme?: string): ThemePalette {
       textMuted: "text-dark-text-muted",
       textAccent: "text-dark-text-accent",
       textAccentMuted: "text-dark-text-accentMuted",
+      textWhite: "text-dark-text-white",
       inputBackground: "bg-dark-input-background",
       inputPlaceholder: "placeholder:text-dark-input-placeholder",
       iconAccent: "#60a5fa",
@@ -53,6 +64,10 @@ export function getThemePalette(theme?: string): ThemePalette {
       iconDanger: "#f87171",
       iconSuccess: "#22c55e",
       iconWarning: "#f59e0b",
+      iconTip: "#93c5fd",
+      buttonPrimary: "bg-dark-button-primary",
+      buttonSecondary: "bg-dark-button-secondary",
+      buttonSecondaryBorder: "border-dark-button-secondaryBorder",
       statusSuccessBg: "bg-dark-status-success-bg",
       statusSuccessText: "#22c55e",
       statusWarningBg: "bg-dark-status-warning-bg",
@@ -66,6 +81,11 @@ export function getThemePalette(theme?: string): ThemePalette {
       switchTrackOff: "#1f2937",
       switchTrackOn: "#2563eb",
       switchThumb: "#f1f5f9",
+      tipBackground: "bg-dark-tip-background",
+      tipBorder: "border-dark-tip-border",
+      tipHeading: "text-dark-tip-heading",
+      tipBody: "text-dark-tip-body",
+      tipLink: "text-dark-tip-link",
     };
   }
 
@@ -80,6 +100,7 @@ export function getThemePalette(theme?: string): ThemePalette {
     textMuted: "text-light-text-muted",
     textAccent: "text-light-text-accent",
     textAccentMuted: "text-light-text-accentMuted",
+    textWhite: "text-light-text-white",
     inputBackground: "bg-light-input-background",
     inputPlaceholder: "placeholder:text-light-input-placeholder",
     iconAccent: "#2563eb",
@@ -87,6 +108,10 @@ export function getThemePalette(theme?: string): ThemePalette {
     iconDanger: "#dc2626",
     iconSuccess: "#22c55e",
     iconWarning: "#f59e0b",
+    iconTip: "#bfdbfe",
+    buttonPrimary: "bg-light-button-primary",
+    buttonSecondary: "bg-light-button-secondary",
+    buttonSecondaryBorder: "border-light-button-secondaryBorder",
     statusSuccessBg: "bg-light-status-success-bg",
     statusSuccessText: "#22c55e",
     statusWarningBg: "bg-light-status-warning-bg",
@@ -100,5 +125,10 @@ export function getThemePalette(theme?: string): ThemePalette {
     switchTrackOff: "#cbd5f5",
     switchTrackOn: "#2563eb",
     switchThumb: "#f8fafc",
+    tipBackground: "bg-light-tip-background",
+    tipBorder: "border-light-tip-border",
+    tipHeading: "text-light-tip-heading",
+    tipBody: "text-light-tip-body",
+    tipLink: "text-light-tip-link",
   };
 }

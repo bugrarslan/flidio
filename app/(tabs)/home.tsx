@@ -2,6 +2,7 @@ import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
 import { deleteTravel, getAllTravels, type TravelRecord } from "@/services/databaseService";
+import { getThemePalette } from "@/utils/themePalette";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -42,28 +43,13 @@ const Home = () => {
     openCardIdRef.current = openCardId;
   }, [openCardId]);
 
+  const selectedTheme = settings?.theme ?? "light";
+  const themePalette = useMemo(
+    () => getThemePalette(selectedTheme),
+    [selectedTheme]
+  );
+
   const isDarkMode = settings?.theme === "dark";
-  const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
-  const accentTextClass = isDarkMode ? "text-accent-text-dark" : "text-accent-text-light";
-  const accentMutedTextClass = isDarkMode
-    ? "text-accent-text-muted-dark"
-    : "text-accent-text-muted-light";
-  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
-  const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
-  const cardClass = isDarkMode ? "bg-card-dark border-border-dark" : "bg-card-light border-border-light";
-  const secondaryButtonClass = isDarkMode ? "border-border-dark bg-card-dark" : "border-primary-500/30 bg-white";
-  const iconAccentColor = isDarkMode ? "#60a5fa" : "#2563eb";
-  const iconTipColor = isDarkMode ? "#93c5fd" : "#bfdbfe";
-  const tipCardClass = isDarkMode
-    ? "bg-card-dark border border-border-dark"
-    : "bg-primary-900/90 border border-primary-900/60";
-  const tipHeadingClass = isDarkMode ? "text-text-primary-dark" : "text-white";
-  const tipBodyClass = isDarkMode ? "text-text-secondary-dark" : "text-primary-50/90";
-  const tipLinkTextClass = isDarkMode ? "text-text-primary-dark" : "text-primary-50";
-  const travelCardClass = isDarkMode
-    ? "bg-card-dark border border-border-dark"
-    : "bg-card-light border border-border-light";
-  const travelMetaTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
 
   const fetchTravels = useCallback(async () => {
     try {
@@ -333,9 +319,9 @@ const Home = () => {
               onPress={() => confirmDeleteTravel(travel)}
               accessibilityRole="button"
               accessibilityLabel="Delete trip"
-              className={`rounded-full ${isDarkMode ? "bg-red-500/20" : "bg-red-500/15"} p-4`}
+              className={`rounded-full ${themePalette.statusDangerBg} p-4`}
             >
-              <Ionicons name="trash-outline" size={20} color={isDarkMode ? "#f87171" : "#dc2626"} />
+              <Ionicons name="trash-outline" size={20} color={themePalette.iconDanger} />
             </Pressable>
           </Animated.View>
         </View>
@@ -346,45 +332,45 @@ const Home = () => {
         >
           <Pressable
             onPress={() => handleOpenTravel(travel.id)}
-            className={`p-5 rounded-3xl ${travelCardClass}`}
+            className={`p-5 rounded-3xl ${themePalette.card} border ${themePalette.border}`}
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-1 pr-3">
-                <Text className={`text-base font-semibold ${headingTextClass}`} numberOfLines={1}>
+                <Text className={`text-base font-semibold ${themePalette.textPrimary}`} numberOfLines={1}>
                   {travel.title}
                 </Text>
-                <Text className={`mt-1 text-sm ${accentTextClass}`} numberOfLines={1}>
+                <Text className={`mt-1 text-sm ${themePalette.textAccent}`} numberOfLines={1}>
                   {travel.departure} → {travel.destination}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={iconAccentColor} />
+              <Ionicons name="chevron-forward" size={18} color={themePalette.iconAccent} />
             </View>
 
             <View className="flex-row flex-wrap items-center mt-4 gap-x-4 gap-y-2">
               <View className="flex-row items-center gap-2">
-                <Ionicons name="calendar-outline" size={16} color={iconAccentColor} />
-                <Text className={`text-xs ${travelMetaTextClass}`}>
+                <Ionicons name="calendar-outline" size={16} color={themePalette.iconAccent} />
+                <Text className={`text-xs ${themePalette.textSecondary}`}>
                   {getDateRangeLabel(travel)}
                 </Text>
               </View>
 
               <View className="flex-row items-center gap-2">
-                <Ionicons name="people-outline" size={16} color={iconAccentColor} />
-                <Text className={`text-xs ${travelMetaTextClass}`}>
+                <Ionicons name="people-outline" size={16} color={themePalette.iconAccent} />
+                <Text className={`text-xs ${themePalette.textSecondary}`}>
                   {getTravelersLabel(travel)}
                 </Text>
               </View>
 
               {budgetLabel ? (
                 <View className="flex-row items-center gap-2">
-                  <Ionicons name="cash-outline" size={16} color={iconAccentColor} />
-                  <Text className={`text-xs ${travelMetaTextClass}`}>{budgetLabel}</Text>
+                  <Ionicons name="cash-outline" size={16} color={themePalette.iconAccent} />
+                  <Text className={`text-xs ${themePalette.textSecondary}`}>{budgetLabel}</Text>
                 </View>
               ) : null}
             </View>
 
             {createdAtLabel ? (
-              <Text className={`mt-3 text-[11px] uppercase tracking-[0.2em] ${travelMetaTextClass}`}>
+              <Text className={`mt-3 text-[11px] uppercase tracking-[0.2em] ${themePalette.textSecondary}`}>
                 Saved {createdAtLabel}
               </Text>
             ) : null}
@@ -395,7 +381,7 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
+    <SafeAreaView className={`flex-1 ${themePalette.background}`}>
       <StatusBar style="auto" />
       <BackgroundCircles isDarkMode={isDarkMode} />
 
@@ -406,13 +392,13 @@ const Home = () => {
         ItemSeparatorComponent={() => <View className="h-4" />}
         ListHeaderComponent={
           <View className="pt-10">
-            <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}>
+            <Text className={`text-sm font-semibold uppercase tracking-[0.2em] ${themePalette.textAccentMuted}`}>
               Welcome back{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}!
             </Text>
-            <Text className={`mt-2 text-3xl font-bold ${headingTextClass}`}>
+            <Text className={`mt-2 text-3xl font-bold ${themePalette.textPrimary}`}>
               Ready for your next escape?
             </Text>
-            <Text className={`mt-3 text-base ${bodyTextClass}`}>
+            <Text className={`mt-3 text-base ${themePalette.textSecondary}`}>
               Tap into Flidio’s AI to craft bespoke trips, or revisit your saved
               adventures.
             </Text>
@@ -420,10 +406,10 @@ const Home = () => {
             <View className="mt-6">
               <Pressable
                 onPress={handleCreateTrip}
-                className="flex-row items-center justify-center flex-1 gap-2 px-5 py-4 rounded-3xl bg-primary-600"
+                className={`flex-row items-center justify-center flex-1 gap-2 px-5 py-4 rounded-3xl ${themePalette.buttonPrimary}`}
               >
                 <Ionicons name="add-circle" size={22} color="white" />
-                <Text className="text-base font-semibold text-white">
+                <Text className={`text-base font-semibold ${themePalette.textWhite}`}>
                   Plan a trip
                 </Text>
               </Pressable>
@@ -431,7 +417,7 @@ const Home = () => {
 
             <View className="mt-10">
               <View className="flex-row items-center justify-between">
-                <Text className={`text-lg font-semibold ${headingTextClass}`}>
+                <Text className={`text-lg font-semibold ${themePalette.textPrimary}`}>
                   Your journeys
                 </Text>
                 {/* <Pressable
@@ -441,10 +427,10 @@ const Home = () => {
                   }}
                   className="flex-row items-center gap-1"
                 >
-                  <Text className={`text-sm font-medium ${accentTextClass}`}>
+                  <Text className={`text-sm font-medium ${themePalette.textAccent}`}>
                     See all
                   </Text>
-                  <Ionicons name="chevron-forward" size={16} color={iconAccentColor} />
+                  <Ionicons name="chevron-forward" size={16} color={themePalette.iconAccent} />
                 </Pressable> */}
               </View>
             </View>
@@ -455,35 +441,35 @@ const Home = () => {
         ListEmptyComponent={
           <View className="mt-4">
             {isLoadingTravels ? (
-              <View className={`p-6 rounded-3xl ${cardClass}`}>
-                <Text className={`text-sm ${bodyTextClass}`}>Loading your journeys...</Text>
+              <View className={`p-6 rounded-3xl ${themePalette.card} ${themePalette.border}`}>
+                <Text className={`text-sm ${themePalette.textSecondary}`}>Loading your journeys...</Text>
               </View>
             ) : loadError ? (
-              <View className={`p-6 rounded-3xl ${cardClass}`}>
-                <Text className={`text-sm ${bodyTextClass}`}>
+              <View className={`p-6 rounded-3xl ${themePalette.card} ${themePalette.border}`}>
+                <Text className={`text-sm ${themePalette.textSecondary}`}>
                   We couldn&apos;t load your saved trips.
                 </Text>
                 <Pressable
                   onPress={handleRetryLoadTravels}
-                  className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-4 border rounded-full ${secondaryButtonClass}`}
+                  className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-4 border rounded-full ${themePalette.buttonSecondary} ${themePalette.buttonSecondaryBorder}`}
                 >
-                  <Ionicons name="refresh" size={18} color={iconAccentColor} />
-                  <Text className={`text-sm font-semibold ${accentTextClass}`}>Try again</Text>
+                  <Ionicons name="refresh" size={18} color={themePalette.iconAccent} />
+                  <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>Try again</Text>
                 </Pressable>
               </View>
             ) : (
-              <View className={`p-6 border rounded-3xl ${cardClass}`}>
+              <View className={`p-6 border rounded-3xl ${themePalette.card} ${themePalette.border}`}>
                 <View className="flex-row items-start gap-4">
                   <View
-                    className={`p-4 rounded-2xl ${isDarkMode ? "bg-primary-600/15" : "bg-primary-600/10"}`}
+                    className={`p-4 rounded-2xl ${themePalette.statusInfoBg}`}
                   >
-                    <Ionicons name="airplane-outline" size={28} color={iconAccentColor} />
+                    <Ionicons name="airplane-outline" size={28} color={themePalette.iconAccent} />
                   </View>
                   <View className="flex-1">
-                    <Text className={`text-base font-semibold ${headingTextClass}`}>
+                    <Text className={`text-base font-semibold ${themePalette.textPrimary}`}>
                       No trips yet
                     </Text>
-                    <Text className={`mt-1 text-sm ${bodyTextClass}`}>
+                    <Text className={`mt-1 text-sm ${themePalette.textSecondary}`}>
                       Create your first itinerary and it will appear right here ready for takeoff.
                     </Text>
                   </View>
@@ -491,10 +477,10 @@ const Home = () => {
 
                 <Pressable
                   onPress={handleCreateTrip}
-                  className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-5 border rounded-full ${secondaryButtonClass}`}
+                  className={`flex-row items-center justify-center gap-2 px-4 py-3 mt-5 border rounded-full ${themePalette.buttonSecondary} ${themePalette.buttonSecondaryBorder}`}
                 >
-                  <Ionicons name="sparkles-outline" size={18} color={iconAccentColor} />
-                  <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                  <Ionicons name="sparkles-outline" size={18} color={themePalette.iconAccent} />
+                  <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>
                     Generate an itinerary
                   </Text>
                 </Pressable>
@@ -510,19 +496,19 @@ const Home = () => {
                   await Haptics.selectionAsync();
                   // TODO: implement travels archive screen
                 }}
-                className={`flex-row items-center justify-center gap-2 px-4 py-3 border rounded-full ${secondaryButtonClass}`}
+                className={`flex-row items-center justify-center gap-2 px-4 py-3 border rounded-full ${themePalette.buttonSecondary} ${themePalette.buttonSecondaryBorder}`}
               >
-                <Ionicons name="map-outline" size={18} color={iconAccentColor} />
-                <Text className={`text-sm font-semibold ${accentTextClass}`}>
+                <Ionicons name="map-outline" size={18} color={themePalette.iconAccent} />
+                <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>
                   View all saved itineraries
                 </Text>
               </Pressable>
             ) : null}
 
             <View className="mt-10">
-              <View className={`p-6 rounded-3xl ${tipCardClass}`}>
-                <Text className={`text-lg font-semibold ${tipHeadingClass}`}>Pro tip</Text>
-                <Text className={`mt-2 text-sm ${tipBodyClass}`}>
+              <View className={`p-6 rounded-3xl ${themePalette.tipBackground} border ${themePalette.tipBorder}`}>
+                <Text className={`text-lg font-semibold ${themePalette.tipHeading}`}>Pro tip</Text>
+                <Text className={`mt-2 text-sm ${themePalette.tipBody}`}>
                   Personalize your traveler profile to help Flidio recommend
                   experiences that match your vibe.
                 </Text>
@@ -534,10 +520,10 @@ const Home = () => {
                   }}
                   className="flex-row items-center gap-2 mt-5"
                 >
-                  <Text className={`text-sm font-semibold ${tipLinkTextClass}`}>
+                  <Text className={`text-sm font-semibold ${themePalette.tipLink}`}>
                     Update profile
                   </Text>
-                  <Ionicons name="arrow-forward" size={16} color={iconTipColor} />
+                  <Ionicons name="arrow-forward" size={16} color={themePalette.iconTip} />
                 </Pressable>
               </View>
             </View>
