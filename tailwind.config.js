@@ -33,6 +33,40 @@ module.exports = {
             accent: "#2563eb",
             accentMuted: "rgba(37, 99, 235, 0.75)",
           },
+          icon: {
+            accent: "#2563eb",
+            muted: "#475569",
+            danger: "#dc2626",
+            success: "#22c55e",
+            warning: "#f59e0b",
+          },
+          status: {
+            success: {
+              bg: "rgba(34, 197, 94, 0.1)",
+              text: "#22c55e",
+            },
+            warning: {
+              bg: "rgba(245, 158, 11, 0.1)",
+              text: "#f59e0b",
+            },
+            danger: {
+              bg: "rgba(220, 38, 38, 0.1)",
+              text: "#dc2626",
+            },
+            info: {
+              bg: "rgba(59, 130, 246, 0.1)",
+              text: "#2563eb",
+            },
+            gray: {
+              bg: "rgba(107, 114, 128, 0.1)",
+              text: "#6b7280",
+            },
+          },
+          switch: {
+            trackOff: "#cbd5f5",
+            trackOn: "#2563eb",
+            thumb: "#f8fafc",
+          },
         },
         dark: {
           background: "#020617",
@@ -49,6 +83,40 @@ module.exports = {
             secondary: "#94a3b8",
             accent: "#93c5fd",
             accentMuted: "rgba(147, 197, 253, 0.85)",
+          },
+          icon: {
+            accent: "#60a5fa",
+            muted: "#94a3b8",
+            danger: "#f87171",
+            success: "#22c55e",
+            warning: "#f59e0b",
+          },
+          status: {
+            success: {
+              bg: "rgba(34, 197, 94, 0.15)",
+              text: "#22c55e",
+            },
+            warning: {
+              bg: "rgba(245, 158, 11, 0.15)",
+              text: "#f59e0b",
+            },
+            danger: {
+              bg: "rgba(248, 113, 113, 0.2)",
+              text: "#f87171",
+            },
+            info: {
+              bg: "rgba(37, 99, 235, 0.15)",
+              text: "#60a5fa",
+            },
+            gray: {
+              bg: "rgba(107, 114, 128, 0.15)",
+              text: "#9ca3af",
+            },
+          },
+          switch: {
+            trackOff: "#1f2937",
+            trackOn: "#2563eb",
+            thumb: "#f1f5f9",
           },
         },
       },

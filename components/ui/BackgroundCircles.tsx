@@ -10,7 +10,7 @@ const BackgroundCircles: React.FC<BackgroundCirclesProps> = ({ isDarkMode = fals
     <View className="absolute inset-0">
       <View
         className={`absolute w-56 h-56 rounded-full -top-16 -right-16 ${
-          isDarkMode ? "bg-accent-dark" : "bg-primary-500/15"
+          isDarkMode ? "bg-dark-accent" : "bg-primary-500/15"
         }`}
       />
       <View
