@@ -51,6 +51,12 @@ export type ThemePalette = {
   chipInactiveBorder: string;
   chipInactiveText: string;
   modalBackground: string;
+  onboardingBackground: string;
+  onboardingCirclePrimary: string;
+  onboardingCircleSecondary: string;
+  onboardingCardBorder: string;
+  onboardingCardBackground: string;
+  onboardingIconWrapper: string;
 };
 
 export function getThemePalette(theme?: string): ThemePalette {
@@ -110,6 +116,12 @@ export function getThemePalette(theme?: string): ThemePalette {
       chipInactiveBorder: "border-dark-chip-inactive-border",
       chipInactiveText: "text-dark-text-secondary",
       modalBackground: "bg-dark-modal-background",
+      onboardingBackground: "bg-dark-onboarding-background",
+      onboardingCirclePrimary: "bg-dark-onboarding-circlePrimary",
+      onboardingCircleSecondary: "bg-dark-onboarding-circleSecondary",
+      onboardingCardBorder: "border-dark-onboarding-cardBorder",
+      onboardingCardBackground: "bg-dark-onboarding-cardBackground",
+      onboardingIconWrapper: "bg-dark-onboarding-iconWrapper",
     };
   }
 
@@ -166,5 +178,11 @@ export function getThemePalette(theme?: string): ThemePalette {
     chipInactiveBorder: "border-light-chip-inactive-border",
     chipInactiveText: "text-light-text-secondary",
     modalBackground: "bg-light-modal-background",
+    onboardingBackground: "bg-light-onboarding-background",
+    onboardingCirclePrimary: "bg-light-onboarding-circlePrimary",
+    onboardingCircleSecondary: "bg-light-onboarding-circleSecondary",
+    onboardingCardBorder: "border-light-onboarding-cardBorder",
+    onboardingCardBackground: "bg-light-onboarding-cardBackground",
+    onboardingIconWrapper: "bg-light-onboarding-iconWrapper",
   };
 }

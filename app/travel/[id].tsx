@@ -2,6 +2,7 @@ import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import type { TravelItineraryPlan } from "@/services/aiService";
 import { getTravelById, type TravelRecord } from "@/services/databaseService";
+import { getThemePalette } from "@/utils/themePalette";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -55,19 +56,10 @@ const TravelDetails = () => {
   }, [fetchTravel]);
 
   const isDarkMode = settings?.theme === "dark";
-  const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
-  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
-  const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
-  const accentTextClass = isDarkMode ? "text-accent-text-dark" : "text-accent-text-light";
-  const accentMutedTextClass = isDarkMode
-    ? "text-accent-text-muted-dark"
-    : "text-accent-text-muted-light";
-  const cardClass = isDarkMode
-    ? "bg-card-dark border border-border-dark"
-    : "bg-card-light border border-border-light";
+  const themePalette = getThemePalette(settings?.theme);
   const chipClass = isDarkMode
-    ? "bg-primary-600/15 border border-border-dark"
-    : "bg-primary-100/80 border border-border-light";
+    ? "bg-primary-600/15 border border-dark-border"
+    : "bg-primary-100/80 border border-light-border";
 
   const displayTitle = travel?.itinerary?.title?.toString().trim() || travel?.title || "Trip details";
   const displayDeparture =
@@ -184,7 +176,7 @@ const TravelDetails = () => {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
+    <SafeAreaView className={`flex-1 ${themePalette.background}`}>
       <StatusBar style="auto" />
       <BackgroundCircles isDarkMode={isDarkMode} />
 
@@ -197,11 +189,11 @@ const TravelDetails = () => {
             onPress={handleGoBack}
             className="flex-row items-center gap-2 px-3 py-2 rounded-full"
           >
-            <Ionicons name="arrow-back" size={20} color={isDarkMode ? "#bfdbfe" : "#2563eb"} />
-            <Text className={`text-sm font-semibold ${accentTextClass}`}>Back</Text>
+            <Ionicons name="arrow-back" size={20} color={themePalette.iconAccent} />
+            <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>Back</Text>
           </Pressable>
 
-          <Text className={`text-xs font-semibold uppercase tracking-[0.25em] ${accentMutedTextClass}`}>
+          <Text className={`text-xs font-semibold uppercase tracking-[0.25em] ${themePalette.textAccentMuted}`}>
             Trip itinerary
           </Text>
 
@@ -209,24 +201,24 @@ const TravelDetails = () => {
         </View>
 
         {isLoading ? (
-          <View className={`items-center justify-center p-8 rounded-3xl ${cardClass}`}>
-            <ActivityIndicator size="small" color={isDarkMode ? "#bfdbfe" : "#2563eb"} />
-            <Text className={`mt-3 text-sm ${bodyTextClass}`}>Loading your itinerary...</Text>
+          <View className={`items-center justify-center p-8 rounded-3xl ${themePalette.card} border ${themePalette.border}`}>
+            <ActivityIndicator size="small" color={themePalette.iconAccent} />
+            <Text className={`mt-3 text-sm ${themePalette.textSecondary}`}>Loading your itinerary...</Text>
           </View>
         ) : error ? (
-          <View className={`p-6 rounded-3xl ${cardClass}`}>
-            <Text className={`text-base font-semibold ${headingTextClass}`}>
+          <View className={`p-6 rounded-3xl ${themePalette.card} border ${themePalette.border}`}>
+            <Text className={`text-base font-semibold ${themePalette.textPrimary}`}>
               We hit some turbulence
             </Text>
-            <Text className={`mt-2 text-sm ${bodyTextClass}`}>{error}</Text>
+            <Text className={`mt-2 text-sm ${themePalette.textSecondary}`}>{error}</Text>
 
             <View className="flex-row gap-3 mt-5">
               <Pressable
                 onPress={handleGoBack}
                 className="flex-row items-center justify-center flex-1 gap-2 px-4 py-3 border border-transparent rounded-full bg-primary-600/10"
               >
-                <Ionicons name="close" size={16} color={isDarkMode ? "#bfdbfe" : "#2563eb"} />
-                <Text className={`text-sm font-semibold ${accentTextClass}`}>Close</Text>
+                <Ionicons name="close" size={16} color={themePalette.iconAccent} />
+                <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>Close</Text>
               </Pressable>
               <Pressable
                 onPress={handleRetry}
@@ -239,9 +231,9 @@ const TravelDetails = () => {
           </View>
         ) : travel ? (
           <>
-            <View className={`p-6 rounded-3xl ${cardClass}`}>
-              <Text className={`text-2xl font-semibold ${headingTextClass}`}>{displayTitle}</Text>
-              <Text className={`mt-2 text-sm ${accentTextClass}`}>
+            <View className={`p-6 rounded-3xl ${themePalette.card} border ${themePalette.border}`}>
+              <Text className={`text-2xl font-semibold ${themePalette.textPrimary}`}>{displayTitle}</Text>
+              <Text className={`mt-2 text-sm ${themePalette.textAccent}`}>
                 {displayDeparture} → {displayDestination}
               </Text>
 
@@ -251,9 +243,9 @@ const TravelDetails = () => {
                     <Ionicons
                       name="calendar-outline"
                       size={16}
-                      color={isDarkMode ? "#93c5fd" : "#2563eb"}
+                      color={themePalette.iconAccent}
                     />
-                    <Text className={`text-xs font-semibold ${accentMutedTextClass}`}>{dateRangeLabel}</Text>
+                    <Text className={`text-xs font-semibold ${themePalette.textAccentMuted}`}>{dateRangeLabel}</Text>
                   </View>
                 ) : null}
 
@@ -262,9 +254,9 @@ const TravelDetails = () => {
                     <Ionicons
                       name="people-outline"
                       size={16}
-                      color={isDarkMode ? "#93c5fd" : "#2563eb"}
+                      color={themePalette.iconAccent}
                     />
-                    <Text className={`text-xs font-semibold ${accentMutedTextClass}`}>{travellersLabel}</Text>
+                    <Text className={`text-xs font-semibold ${themePalette.textAccentMuted}`}>{travellersLabel}</Text>
                   </View>
                 ) : null}
 
@@ -273,9 +265,9 @@ const TravelDetails = () => {
                     <Ionicons
                       name="cash-outline"
                       size={16}
-                      color={isDarkMode ? "#93c5fd" : "#2563eb"}
+                      color={themePalette.iconAccent}
                     />
-                    <Text className={`text-xs font-semibold ${accentMutedTextClass}`}>{budgetLabel}</Text>
+                    <Text className={`text-xs font-semibold ${themePalette.textAccentMuted}`}>{budgetLabel}</Text>
                   </View>
                 ) : null}
 
@@ -284,24 +276,24 @@ const TravelDetails = () => {
                     <Ionicons
                       name="time-outline"
                       size={16}
-                      color={isDarkMode ? "#93c5fd" : "#2563eb"}
+                      color={themePalette.iconAccent}
                     />
-                    <Text className={`text-xs font-semibold ${accentMutedTextClass}`}>{createdAtLabel}</Text>
+                    <Text className={`text-xs font-semibold ${themePalette.textAccentMuted}`}>{createdAtLabel}</Text>
                   </View>
                 ) : null}
               </View>
             </View>
 
             <View className="mt-6">
-              <Text className={`text-lg font-semibold ${headingTextClass}`}>Daily game plan</Text>
-              <Text className={`mt-1 text-xs ${bodyTextClass}`}>
+              <Text className={`text-lg font-semibold ${themePalette.textPrimary}`}>Daily game plan</Text>
+              <Text className={`mt-1 text-xs ${themePalette.textSecondary}`}>
                 Curated specifically for you based on your traveler profile and trip details.
               </Text>
             </View>
 
             {itineraryDays.length === 0 ? (
-              <View className={`p-6 mt-4 rounded-3xl ${cardClass}`}>
-                <Text className={`text-sm ${bodyTextClass}`}>
+              <View className={`p-6 mt-4 rounded-3xl ${themePalette.card} border ${themePalette.border}`}>
+                <Text className={`text-sm ${themePalette.textSecondary}`}>
                   This itinerary doesn&apos;t include a detailed schedule yet. Regenerate the trip from the
                   home screen to get fresh ideas.
                 </Text>
@@ -322,18 +314,17 @@ const TravelDetails = () => {
                   const dayKey = `${day.day ?? "day"}-${day.date ?? index}`;
                   const isExpanded = expandedDays[dayKey] ?? true;
                   const toggleIcon = isExpanded ? "chevron-up-outline" : "chevron-down-outline";
-                  const toggleIconColor = isDarkMode ? "#bfdbfe" : "#2563eb";
 
                   return (
-                    <View key={dayKey} className={`p-5 rounded-3xl ${cardClass}`}>
+                    <View key={dayKey} className={`p-5 rounded-3xl ${themePalette.card} border ${themePalette.border}`}>
                       <Pressable
                         onPress={() => toggleDayExpansion(dayKey)}
                         className="flex-row items-center justify-between"
                         accessibilityRole="button"
                         accessibilityLabel={`Toggle details for ${dayLabel}`}
                       >
-                        <Text className={`text-base font-semibold ${headingTextClass}`}>{dayLabel}</Text>
-                        <Ionicons name={toggleIcon} size={20} color={toggleIconColor} />
+                        <Text className={`text-base font-semibold ${themePalette.textPrimary}`}>{dayLabel}</Text>
+                        <Ionicons name={toggleIcon} size={20} color={themePalette.iconAccent} />
                       </Pressable>
 
                       {isExpanded ? (
@@ -343,15 +334,15 @@ const TravelDetails = () => {
                               <Ionicons
                                 name="cafe-outline"
                                 size={18}
-                                color={isDarkMode ? "#bfdbfe" : "#2563eb"}
+                                color={themePalette.iconAccent}
                               />
                               <View className="flex-1">
                                 <Text
-                                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}
+                                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${themePalette.textAccentMuted}`}
                                 >
                                   Morning
                                 </Text>
-                                <Text className={`mt-1 text-sm leading-relaxed ${bodyTextClass}`}>
+                                <Text className={`mt-1 text-sm leading-relaxed ${themePalette.textSecondary}`}>
                                   {plan.morning}
                                 </Text>
                               </View>
@@ -363,15 +354,15 @@ const TravelDetails = () => {
                               <Ionicons
                                 name="partly-sunny-outline"
                                 size={18}
-                                color={isDarkMode ? "#bfdbfe" : "#2563eb"}
+                                color={themePalette.iconAccent}
                               />
                               <View className="flex-1">
                                 <Text
-                                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}
+                                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${themePalette.textAccentMuted}`}
                                 >
                                   Afternoon
                                 </Text>
-                                <Text className={`mt-1 text-sm leading-relaxed ${bodyTextClass}`}>
+                                <Text className={`mt-1 text-sm leading-relaxed ${themePalette.textSecondary}`}>
                                   {plan.afternoon}
                                 </Text>
                               </View>
@@ -383,15 +374,15 @@ const TravelDetails = () => {
                               <Ionicons
                                 name="moon-outline"
                                 size={18}
-                                color={isDarkMode ? "#bfdbfe" : "#2563eb"}
+                                color={themePalette.iconAccent}
                               />
                               <View className="flex-1">
                                 <Text
-                                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${accentMutedTextClass}`}
+                                  className={`text-xs font-semibold uppercase tracking-[0.2em] ${themePalette.textAccentMuted}`}
                                 >
                                   Evening
                                 </Text>
-                                <Text className={`mt-1 text-sm leading-relaxed ${bodyTextClass}`}>
+                                <Text className={`mt-1 text-sm leading-relaxed ${themePalette.textSecondary}`}>
                                   {plan.evening}
                                 </Text>
                               </View>
@@ -399,7 +390,7 @@ const TravelDetails = () => {
                           ) : null}
 
                           {!plan.morning && !plan.afternoon && !plan.evening ? (
-                            <Text className={`text-sm ${bodyTextClass}`}>
+                            <Text className={`text-sm ${themePalette.textSecondary}`}>
                               No schedule provided for this day.
                             </Text>
                           ) : null}

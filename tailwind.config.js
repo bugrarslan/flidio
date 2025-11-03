@@ -105,6 +105,14 @@ module.exports = {
           modal: {
             background: "#ffffff",
           },
+          onboarding: {
+            background: "#1e3a8a",
+            circlePrimary: "rgba(37, 99, 235, 0.6)",
+            circleSecondary: "rgba(59, 130, 246, 0.45)",
+            cardBorder: "rgba(255, 255, 255, 0.15)",
+            cardBackground: "rgba(255, 255, 255, 0.1)",
+            iconWrapper: "rgba(37, 99, 235, 0.6)",
+          },
         },
         dark: {
           background: "#020617",
@@ -193,6 +201,14 @@ module.exports = {
           },
           modal: {
             background: "rgba(15, 23, 42, 0.9)",
+          },
+          onboarding: {
+            background: "#020617",
+            circlePrimary: "rgba(37, 99, 235, 0.35)",
+            circleSecondary: "rgba(59, 130, 246, 0.35)",
+            cardBorder: "rgba(94, 106, 128, 0.35)",
+            cardBackground: "rgba(15, 23, 42, 0.8)",
+            iconWrapper: "rgba(37, 99, 235, 0.3)",
           },
         },
       },

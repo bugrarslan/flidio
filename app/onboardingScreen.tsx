@@ -7,6 +7,7 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useSettingsContext } from "@/context/SettingsContext";
+import { getThemePalette } from "@/utils/themePalette";
 
 const FEATURE_HIGHLIGHTS = [
   {
@@ -34,33 +35,22 @@ const OnboardingScreen = () => {
   const { updateSettings, settings } = useSettingsContext();
 
   const isDarkMode = settings?.theme === "dark";
-  const backgroundClass = isDarkMode ? "bg-background-dark" : "bg-primary-900";
+  const themePalette = getThemePalette(settings?.theme);
   const statusBarStyle: "light" | "dark" | "auto" = isDarkMode
     ? "light"
     : "light";
-  const primaryCircleClass = isDarkMode
-    ? "bg-primary-600/35"
-    : "bg-primary-600/60";
-  const secondaryCircleClass = isDarkMode
-    ? "bg-secondary-500/35"
-    : "bg-secondary-500/45";
-  const cardBorderClass = isDarkMode ? "border-border-dark" : "border-white/15";
-  const cardBackgroundClass = isDarkMode ? "bg-card-dark/80" : "bg-white/10";
-  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-white";
-  const bodyTextClass = isDarkMode
-    ? "text-text-secondary-dark"
-    : "text-secondary-50/90";
-  const featureIconWrapperClass = isDarkMode
-    ? "bg-primary-600/30"
-    : "bg-primary-600/60";
   const primaryButtonBackground = isDarkMode ? "bg-accent-light" : "bg-white";
   const primaryButtonTextClass = isDarkMode
     ? "text-accent-text-light"
     : "text-primary-600";
-  const primaryButtonIconColor = isDarkMode ? "#2563eb" : "#2563eb";
-  const secondaryButtonTextClass = isDarkMode
-    ? "text-accent-text-muted-dark"
+  const headingTextClass = isDarkMode ? themePalette.textPrimary : "text-white";
+  const bodyTextClass = isDarkMode
+    ? themePalette.textSecondary
     : "text-secondary-50/90";
+  const secondaryButtonTextClass = isDarkMode
+    ? themePalette.textAccentMuted
+    : "text-secondary-50/90";
+  const iconColor = isDarkMode ? "#e2e8f0" : "white";
 
   const handleGetStarted = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -83,16 +73,16 @@ const OnboardingScreen = () => {
   }, [router, updateSettings]);
 
   return (
-    <SafeAreaView className={`flex-1 ${backgroundClass}`}>
+    <SafeAreaView className={`flex-1 ${themePalette.onboardingBackground}`}>
       <StatusBar style="auto" />
 
       {/* Background decorative circles */}
       <View className="absolute inset-0">
         <View
-          className={`absolute w-56 h-56 rounded-full -top-16 -right-16 ${primaryCircleClass}`}
+          className={`absolute w-56 h-56 rounded-full -top-16 -right-16 ${themePalette.onboardingCirclePrimary}`}
         />
         <View
-          className={`absolute w-64 h-64 rounded-full bottom-24 -left-10 ${secondaryCircleClass}`}
+          className={`absolute w-64 h-64 rounded-full bottom-24 -left-10 ${themePalette.onboardingCircleSecondary}`}
         />
       </View>
 
@@ -113,13 +103,13 @@ const OnboardingScreen = () => {
             {FEATURE_HIGHLIGHTS.map((feature) => (
               <View
                 key={feature.title}
-                className={`flex-row items-start gap-4 p-4 border rounded-2xl ${cardBorderClass} ${cardBackgroundClass}`}
+                className={`flex-row items-start gap-4 p-4 border rounded-2xl ${themePalette.onboardingCardBorder} ${themePalette.onboardingCardBackground}`}
               >
-                <View className={`p-3 rounded-full ${featureIconWrapperClass}`}>
+                <View className={`p-3 rounded-full ${themePalette.onboardingIconWrapper}`}>
                   <Ionicons
                     name={feature.icon}
                     size={24}
-                    color={isDarkMode ? "#e2e8f0" : "white"}
+                    color={iconColor}
                   />
                 </View>
                 <View className="flex-1">
@@ -149,7 +139,7 @@ const OnboardingScreen = () => {
               <Ionicons
                 name="arrow-forward"
                 size={20}
-                color={primaryButtonIconColor}
+                color={themePalette.iconAccent}
               />
             </View>
           </Pressable>

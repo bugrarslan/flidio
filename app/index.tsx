@@ -8,8 +8,8 @@ const index = () => {
   const { settings } = useSettingsContext();
   const isDarkMode = settings?.theme === "dark";
   const backgroundClass = isDarkMode
-    ? "bg-background-dark"
-    : "bg-background-light";
+    ? "bg-dark-background"
+    : "bg-light-background";
 
   return (
     <SafeAreaView className={`flex-1 ${backgroundClass} justify-center items-center`}>
