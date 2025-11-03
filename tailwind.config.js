@@ -81,6 +81,19 @@ module.exports = {
             body: "rgba(239, 246, 255, 0.9)",
             link: "#eff6ff",
           },
+          vibe: {
+            active: {
+              bg: "rgba(37, 99, 235, 0.1)",
+              border: "#2563eb",
+            },
+            inactive: {
+              bg: "#ffffff",
+              border: "rgba(37, 99, 235, 0.2)",
+            },
+          },
+          modal: {
+            background: "#ffffff",
+          },
         },
         dark: {
           background: "#020617",
@@ -145,6 +158,19 @@ module.exports = {
             heading: "#e2e8f0",
             body: "#94a3b8",
             link: "#e2e8f0",
+          },
+          vibe: {
+            active: {
+              bg: "rgba(37, 99, 235, 0.2)",
+              border: "#3b82f6",
+            },
+            inactive: {
+              bg: "rgba(15, 23, 42, 0.9)",
+              border: "rgba(94, 106, 128, 0.35)",
+            },
+          },
+          modal: {
+            background: "rgba(15, 23, 42, 0.9)",
           },
         },
       },

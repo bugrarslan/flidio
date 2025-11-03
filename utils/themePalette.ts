@@ -39,6 +39,12 @@ export type ThemePalette = {
   tipHeading: string;
   tipBody: string;
   tipLink: string;
+  vibeActiveBg: string;
+  vibeActiveBorder: string;
+  vibeInactiveBg: string;
+  vibeInactiveBorder: string;
+  vibeInactiveText: string;
+  modalBackground: string;
 };
 
 export function getThemePalette(theme?: string): ThemePalette {
@@ -86,6 +92,12 @@ export function getThemePalette(theme?: string): ThemePalette {
       tipHeading: "text-dark-tip-heading",
       tipBody: "text-dark-tip-body",
       tipLink: "text-dark-tip-link",
+      vibeActiveBg: "bg-dark-vibe-active-bg",
+      vibeActiveBorder: "border-dark-vibe-active-border",
+      vibeInactiveBg: "bg-dark-vibe-inactive-bg",
+      vibeInactiveBorder: "border-dark-vibe-inactive-border",
+      vibeInactiveText: "text-dark-text-secondary",
+      modalBackground: "bg-dark-modal-background",
     };
   }
 
@@ -130,5 +142,11 @@ export function getThemePalette(theme?: string): ThemePalette {
     tipHeading: "text-light-tip-heading",
     tipBody: "text-light-tip-body",
     tipLink: "text-light-tip-link",
+    vibeActiveBg: "bg-light-vibe-active-bg",
+    vibeActiveBorder: "border-light-vibe-active-border",
+    vibeInactiveBg: "bg-light-vibe-inactive-bg",
+    vibeInactiveBorder: "border-light-vibe-inactive-border",
+    vibeInactiveText: "text-light-text-secondary",
+    modalBackground: "bg-light-modal-background",
   };
 }
