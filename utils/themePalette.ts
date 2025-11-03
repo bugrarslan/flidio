@@ -14,6 +14,7 @@ export type ThemePalette = {
   inputPlaceholder: string;
   iconAccent: string;
   iconMuted: string;
+  iconSecondary: string;
   iconDanger: string;
   iconSuccess: string;
   iconWarning: string;
@@ -44,6 +45,11 @@ export type ThemePalette = {
   vibeInactiveBg: string;
   vibeInactiveBorder: string;
   vibeInactiveText: string;
+  chipActiveBg: string;
+  chipActiveBorder: string;
+  chipInactiveBg: string;
+  chipInactiveBorder: string;
+  chipInactiveText: string;
   modalBackground: string;
 };
 
@@ -67,6 +73,7 @@ export function getThemePalette(theme?: string): ThemePalette {
       inputPlaceholder: "placeholder:text-dark-input-placeholder",
       iconAccent: "#60a5fa",
       iconMuted: "#94a3b8",
+      iconSecondary: "#cbd5f5",
       iconDanger: "#f87171",
       iconSuccess: "#22c55e",
       iconWarning: "#f59e0b",
@@ -97,6 +104,11 @@ export function getThemePalette(theme?: string): ThemePalette {
       vibeInactiveBg: "bg-dark-vibe-inactive-bg",
       vibeInactiveBorder: "border-dark-vibe-inactive-border",
       vibeInactiveText: "text-dark-text-secondary",
+      chipActiveBg: "bg-dark-chip-active-bg",
+      chipActiveBorder: "border-dark-chip-active-border",
+      chipInactiveBg: "bg-dark-chip-inactive-bg",
+      chipInactiveBorder: "border-dark-chip-inactive-border",
+      chipInactiveText: "text-dark-text-secondary",
       modalBackground: "bg-dark-modal-background",
     };
   }
@@ -117,6 +129,7 @@ export function getThemePalette(theme?: string): ThemePalette {
     inputPlaceholder: "placeholder:text-light-input-placeholder",
     iconAccent: "#2563eb",
     iconMuted: "#475569",
+    iconSecondary: "#cbd5f5",
     iconDanger: "#dc2626",
     iconSuccess: "#22c55e",
     iconWarning: "#f59e0b",
@@ -147,6 +160,11 @@ export function getThemePalette(theme?: string): ThemePalette {
     vibeInactiveBg: "bg-light-vibe-inactive-bg",
     vibeInactiveBorder: "border-light-vibe-inactive-border",
     vibeInactiveText: "text-light-text-secondary",
+    chipActiveBg: "bg-light-chip-active-bg",
+    chipActiveBorder: "border-light-chip-active-border",
+    chipInactiveBg: "bg-light-chip-inactive-bg",
+    chipInactiveBorder: "border-light-chip-inactive-border",
+    chipInactiveText: "text-light-text-secondary",
     modalBackground: "bg-light-modal-background",
   };
 }

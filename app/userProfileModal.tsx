@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useUserProfileContext } from "@/context/UserProfileContext";
+import { getThemePalette } from "@/utils/themePalette";
 
 const TRAVEL_STYLES = [
   "City breaks",
@@ -46,29 +47,8 @@ const UserProfileModal = () => {
   const [travelStyles, setTravelStyles] = useState<string[]>([]);
 
   const isDarkMode = settings?.theme === "dark";
-  const screenBackgroundClass = isDarkMode ? "bg-background-dark" : "bg-background-light";
-  const headingTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
-  const bodyTextClass = isDarkMode ? "text-text-secondary-dark" : "text-text-secondary-light";
-  const accentTextClass = isDarkMode ? "text-accent-text-dark" : "text-accent-text-light";
-  const labelTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
-  const cardClass = isDarkMode
-    ? "bg-card-dark border border-border-dark"
-    : "bg-card-light border border-border-light";
-  const cardShadowClass = isDarkMode ? "shadow-xl shadow-primary-900/20" : "shadow-lg shadow-primary-900/5";
-  const inputContainerClass = isDarkMode
-    ? "bg-input-background-dark border border-border-dark"
-    : "bg-input-background-light border border-border-light";
-  const inputTextClass = isDarkMode ? "text-text-primary-dark" : "text-text-primary-light";
+  const themePalette = getThemePalette(settings?.theme);
   const placeholderColor = isDarkMode ? "#64748b" : "#94a3b8";
-  const iconPrimaryColor = isDarkMode ? "#93c5fd" : "#2563eb";
-  const iconSecondaryColor = isDarkMode ? "#cbd5f5" : "#475569";
-  const chipActiveContainerClass = isDarkMode
-    ? "border-primary-500 bg-primary-600/20"
-    : "border-primary-600 bg-primary-600/10";
-  const chipInactiveContainerClass = isDarkMode
-    ? "border-border-dark bg-card-dark"
-    : "border-primary-500/20 bg-white";
-  const chipInactiveTextClass = isDarkMode ? "text-text-secondary-dark" : "text-secondary-600";
 
   useEffect(() => {
     if (!profile) {
@@ -144,7 +124,7 @@ const UserProfileModal = () => {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${screenBackgroundClass}`}>
+    <SafeAreaView className={`flex-1 ${themePalette.background}`}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -158,11 +138,11 @@ const UserProfileModal = () => {
             onPress={handleGoBack}
             className="flex-row items-center gap-2"
           >
-            <Ionicons name="chevron-back" size={22} color={iconPrimaryColor} />
-            <Text className={`text-base font-medium ${headingTextClass}`}>Back</Text>
+            <Ionicons name="chevron-back" size={22} color={themePalette.iconAccent} />
+            <Text className={`text-base font-medium ${themePalette.textPrimary}`}>Back</Text>
           </Pressable>
           <Pressable onPress={handleSkip}>
-            <Text className={`text-sm font-semibold uppercase ${accentTextClass}`}>
+            <Text className={`text-sm font-semibold uppercase ${themePalette.textAccent}`}>
               Skip for now
             </Text>
           </Pressable>
@@ -173,16 +153,16 @@ const UserProfileModal = () => {
           contentContainerStyle={{ paddingBottom: 36 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View className={`p-6 mt-8 rounded-3xl ${cardClass} ${cardShadowClass}`}>
+          <View className={`p-6 mt-8 rounded-3xl ${themePalette.card} border ${themePalette.border} ${isDarkMode ? "shadow-xl shadow-primary-900/20" : "shadow-lg shadow-primary-900/5"}`}>
             <View className="flex-row items-center gap-4">
-              <View className={`p-4 rounded-full ${isDarkMode ? "bg-primary-600/20" : "bg-primary-500/20"}`}>
-                <Ionicons name="person-outline" size={28} color={iconPrimaryColor} />
+              <View className={`p-4 rounded-full ${themePalette.accent}`}>
+                <Ionicons name="person-outline" size={28} color={themePalette.iconAccent} />
               </View>
               <View className="flex-1">
-                <Text className={`text-2xl font-semibold ${headingTextClass}`}>
+                <Text className={`text-2xl font-semibold ${themePalette.textPrimary}`}>
                   Complete your traveler profile
                 </Text>
-                <Text className={`mt-1 text-sm ${bodyTextClass}`}>
+                <Text className={`mt-1 text-sm ${themePalette.textSecondary}`}>
                   Share a few details so Flidio can tailor itineraries that feel
                   made for you.
                 </Text>
@@ -191,28 +171,28 @@ const UserProfileModal = () => {
 
             <View className="gap-4 mt-6 space-y-5">
               <View>
-                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}>
                   Full name
                 </Text>
-                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                  <Ionicons name="id-card-outline" size={20} color={iconPrimaryColor} />
+                <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${themePalette.inputBackground} border ${themePalette.border}`}>
+                  <Ionicons name="id-card-outline" size={20} color={themePalette.iconAccent} />
                   <TextInput
                     value={name}
                     onChangeText={setName}
                     placeholder="Alex Traveler"
                     placeholderTextColor={placeholderColor}
-                    className={`flex-1 text-base h-7 ${inputTextClass}`}
+                    className={`flex-1 text-base h-7 ${themePalette.textPrimary}`}
                   />
                 </View>
               </View>
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
-                  <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                  <Text className={`text-sm font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}>
                     Age
                   </Text>
-                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                    <Ionicons name="calendar-outline" size={20} color={iconPrimaryColor} />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${themePalette.inputBackground} border ${themePalette.border}`}>
+                    <Ionicons name="calendar-outline" size={20} color={themePalette.iconAccent} />
                     <TextInput
                       value={age}
                       onChangeText={(value) => {
@@ -223,29 +203,29 @@ const UserProfileModal = () => {
                       placeholder="28"
                       keyboardType="number-pad"
                       placeholderTextColor={placeholderColor}
-                      className={`flex-1 text-base h-7 ${inputTextClass}`}
+                      className={`flex-1 text-base h-7 ${themePalette.textPrimary}`}
                     />
                   </View>
                 </View>
                 <View className="flex-1">
-                  <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                  <Text className={`text-sm font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}>
                     Home base
                   </Text>
-                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
-                    <Ionicons name="navigate-outline" size={20} color={iconPrimaryColor} />
+                  <View className={`flex-row items-center gap-3 px-4 py-3 mt-2 rounded-2xl ${themePalette.inputBackground} border ${themePalette.border}`}>
+                    <Ionicons name="navigate-outline" size={20} color={themePalette.iconAccent} />
                     <TextInput
                       value={location}
                       onChangeText={setLocation}
                       placeholder="Lisbon, Portugal"
                       placeholderTextColor={placeholderColor}
-                      className={`flex-1 text-base h-7 ${inputTextClass}`}
+                      className={`flex-1 text-base h-7 ${themePalette.textPrimary}`}
                     />
                   </View>
                 </View>
               </View>
 
               <View>
-                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}>
                   Budget preference
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -258,17 +238,17 @@ const UserProfileModal = () => {
                           setSelectedBudget(isSelected ? null : budget.label)
                         }
                         className={`flex-row items-center gap-2 rounded-full border px-4 py-2 ${
-                          isSelected ? chipActiveContainerClass : chipInactiveContainerClass
+                          isSelected ? `${themePalette.chipActiveBg} ${themePalette.chipActiveBorder}` : `${themePalette.chipInactiveBg} ${themePalette.chipInactiveBorder}`
                         }`}
                       >
                         <Ionicons
                           name={budget.icon as keyof typeof Ionicons.glyphMap}
                           size={18}
-                          color={isSelected ? iconPrimaryColor : iconSecondaryColor}
+                          color={isSelected ? themePalette.iconAccent : themePalette.iconSecondary}
                         />
                         <Text
                           className={`text-sm font-medium ${
-                            isSelected ? accentTextClass : chipInactiveTextClass
+                            isSelected ? themePalette.textAccent : themePalette.chipInactiveText
                           }`}
                         >
                           {budget.label}
@@ -280,7 +260,7 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}>
                   Travel styles
                 </Text>
                 <View className="flex-row flex-wrap gap-3 mt-3">
@@ -291,12 +271,12 @@ const UserProfileModal = () => {
                         key={style}
                         onPress={() => toggleStyle(style)}
                         className={`rounded-full border px-4 py-2 ${
-                          isActive ? chipActiveContainerClass : chipInactiveContainerClass
+                          isActive ? `${themePalette.chipActiveBg} ${themePalette.chipActiveBorder}` : `${themePalette.chipInactiveBg} ${themePalette.chipInactiveBorder}`
                         }`}
                       >
                         <Text
                           className={`text-sm font-medium ${
-                            isActive ? accentTextClass : chipInactiveTextClass
+                            isActive ? themePalette.textAccent : themePalette.chipInactiveText
                           }`}
                         >
                           {style}
@@ -308,16 +288,16 @@ const UserProfileModal = () => {
               </View>
 
               <View>
-                <Text className={`text-sm font-semibold tracking-wide uppercase ${labelTextClass}`}>
+                <Text className={`text-sm font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}>
                   Trip wishlist
                 </Text>
-                <View className={`px-4 py-3 mt-2 rounded-2xl ${inputContainerClass}`}>
+                <View className={`px-4 py-3 mt-2 rounded-2xl ${themePalette.inputBackground} border ${themePalette.border}`}>
                   <TextInput
                     value={bio}
                     onChangeText={setBio}
                     placeholder="Tell us the kind of adventures you can’t wait to experience."
                     placeholderTextColor={placeholderColor}
-                    className={`min-h-[96px] text-base ${inputTextClass}`}
+                    className={`min-h-[96px] text-base ${themePalette.textPrimary}`}
                     multiline
                   />
                 </View>
@@ -347,7 +327,7 @@ const UserProfileModal = () => {
               onPress={handleSkip}
               className={`flex-row items-center justify-center gap-2 px-6 py-4 rounded-full ${secondaryButtonClass}`}
             >
-              <Ionicons name="time-outline" size={20} color={iconPrimaryColor} />
+              <Ionicons name="time-outline" size={20} color={themePalette.iconAccent} />
               <Text className={`text-base font-semibold ${accentMutedTextClass}`}>
                 Maybe later
               </Text>

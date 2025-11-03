@@ -37,6 +37,7 @@ module.exports = {
           icon: {
             accent: "#2563eb",
             muted: "#475569",
+            secondary: "#cbd5f5",
             danger: "#dc2626",
             success: "#22c55e",
             warning: "#f59e0b",
@@ -91,6 +92,16 @@ module.exports = {
               border: "rgba(37, 99, 235, 0.2)",
             },
           },
+          chip: {
+            active: {
+              bg: "rgba(37, 99, 235, 0.1)",
+              border: "#2563eb",
+            },
+            inactive: {
+              bg: "#ffffff",
+              border: "rgba(37, 99, 235, 0.2)",
+            },
+          },
           modal: {
             background: "#ffffff",
           },
@@ -115,6 +126,7 @@ module.exports = {
           icon: {
             accent: "#60a5fa",
             muted: "#94a3b8",
+            secondary: "#cbd5f5",
             danger: "#f87171",
             success: "#22c55e",
             warning: "#f59e0b",
@@ -160,6 +172,16 @@ module.exports = {
             link: "#e2e8f0",
           },
           vibe: {
+            active: {
+              bg: "rgba(37, 99, 235, 0.2)",
+              border: "#3b82f6",
+            },
+            inactive: {
+              bg: "rgba(15, 23, 42, 0.9)",
+              border: "rgba(94, 106, 128, 0.35)",
+            },
+          },
+          chip: {
             active: {
               bg: "rgba(37, 99, 235, 0.2)",
               border: "#3b82f6",
