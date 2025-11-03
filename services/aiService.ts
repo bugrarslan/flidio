@@ -64,10 +64,7 @@ const isInvalidApiKeyError = (error: unknown): boolean => {
   return /api key/i.test(message) && /(invalid|unauthorized|missing|expired|permission)/i.test(message);
 };
 
-function resolveApiKey(override?: string | null): string {
-  if (override && override.trim().length > 0) {
-    return override.trim();
-  }
+function resolveApiKey(): string {
 
   const envKey =
     process.env.EXPO_PUBLIC_GOOGLE_AI_KEY ??
@@ -117,7 +114,7 @@ export async function generateResponse(
   options?: { apiKey?: string | null }
 ): Promise<TravelItineraryResponse> {
   const ai = new GoogleGenAI({
-    apiKey: resolveApiKey(options?.apiKey ?? null),
+    apiKey: resolveApiKey(),
   });
 
   try {

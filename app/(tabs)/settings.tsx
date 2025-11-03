@@ -75,13 +75,8 @@ const Settings = () => {
 
   const isDarkMode = settings?.theme === "dark";
 
-  const [apiKey, setApiKey] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
   type DataAction = "profile-settings" | "itineraries" | "all";
   const [pendingAction, setPendingAction] = useState<DataAction | null>(null);
-  const storedApiKey = settings?.aiApiKey?.trim() ?? "";
-  const hasStoredApiKey = storedApiKey.length > 0;
-  const canRemoveApiKey = hasStoredApiKey || apiKey.trim().length > 0;
   const profileDisabled = profileLoading || profileSaving;
 
   const profileUpdatedLabel = useMemo(() => {
@@ -112,12 +107,6 @@ const Settings = () => {
     return Constants.expoConfig?.version ?? "1.0.0";
   }, []);
 
-  useEffect(() => {
-    if (settings) {
-      setApiKey(settings.aiApiKey);
-    }
-  }, [settings]);
-
   const handleToggleTheme = useCallback(async () => {
     await Haptics.selectionAsync();
     const nextTheme = isDarkMode ? "light" : "dark";
@@ -129,56 +118,6 @@ const Settings = () => {
       Alert.alert("Couldn't update theme", "Please try again in a moment.");
     }
   }, [isDarkMode, updateSettings]);
-
-  const handleSaveApiKey = useCallback(async () => {
-    const trimmedKey = apiKey.trim();
-    if (!trimmedKey) {
-      Alert.alert(
-        "API key required",
-        "Paste your Google Generative AI key before saving."
-      );
-      return;
-    }
-
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    try {
-      await updateSettings({ aiApiKey: trimmedKey });
-      Alert.alert(
-        "API key saved",
-        "You're ready to generate AI travel itineraries."
-      );
-    } catch (error) {
-      console.error("Failed to save settings", error);
-      Alert.alert(
-        "Couldn't save API key",
-        "Please double-check the value and try again."
-      );
-    }
-  }, [apiKey, updateSettings]);
-
-  const handleRemoveApiKey = useCallback(async () => {
-    if (!hasStoredApiKey && apiKey.trim().length === 0) {
-      return;
-    }
-
-    await Haptics.selectionAsync();
-
-    try {
-      setApiKey("");
-      setShowApiKey(false);
-      if (hasStoredApiKey) {
-        await updateSettings({ aiApiKey: "" });
-        Alert.alert(
-          "API key removed",
-          "You can add a new Gemini API key at any time."
-        );
-      }
-    } catch (error) {
-      console.error("Failed to remove API key", error);
-      Alert.alert("Couldn't remove API key", "Please try again in a moment.");
-    }
-  }, [apiKey, hasStoredApiKey, updateSettings]);
 
   const executeDataAction = useCallback(
     async (
@@ -713,90 +652,6 @@ const Settings = () => {
                 variant="primary"
                 themePalette={themePalette}
               />
-            </View>
-          </SettingsCard>
-
-          {/* Google AI access */}
-          <SettingsCard
-            title="Google AI access"
-            description="Add your Google Generative AI key so we can craft itineraries in real time."
-            icon="sparkles-outline"
-            themePalette={themePalette}
-          >
-            <View className="mt-4">
-              <Text
-                className={`text-xs font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}
-              >
-                API key
-              </Text>
-              <View
-                className={`flex-row items-center gap-3 px-4 py-3 mt-2 border rounded-2xl ${themePalette.inputBackground} ${themePalette.border}`}
-              >
-                <Ionicons
-                  name="key-outline"
-                  size={20}
-                  color={themePalette.iconAccent}
-                />
-                <TextInput
-                  value={apiKey}
-                  onChangeText={setApiKey}
-                  placeholder="AIza..."
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  placeholderTextColor={isDarkMode ? "#64748b" : "#94a3b8"}
-                  secureTextEntry={!showApiKey}
-                  className={`flex-1 text-base h-7 ${themePalette.textPrimary}`}
-                />
-                {canRemoveApiKey ? (
-                  <Pressable
-                    onPress={() => {
-                      void handleRemoveApiKey();
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Remove API key"
-                    className={`p-1.5 rounded-full ${themePalette.statusDangerBg}`}
-                  >
-                    <Ionicons
-                      name="close-circle"
-                      size={18}
-                      color={themePalette.iconDanger}
-                    />
-                  </Pressable>
-                ) : null}
-                <Pressable
-                  onPress={async () => {
-                    await Haptics.selectionAsync();
-                    setShowApiKey((prev) => !prev);
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    showApiKey ? "Hide API key" : "Show API key"
-                  }
-                >
-                  <Ionicons
-                    name={showApiKey ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color={themePalette.iconMuted}
-                  />
-                </Pressable>
-              </View>
-
-              <Pressable
-                onPress={handleSaveApiKey}
-                disabled={!apiKey.trim() || saving}
-                className={`mt-4 flex-row items-center justify-center gap-2 rounded-full px-5 py-3 ${
-                  apiKey.trim() && !saving
-                    ? "bg-primary-600"
-                    : "bg-primary-500/40"
-                }`}
-              >
-                <Ionicons name="cloud-upload-outline" size={18} color="white" />
-                <Text
-                  className={`text-sm font-semibold text-white ${apiKey.trim() && !saving ? "opacity-100" : "opacity-75"}`}
-                >
-                  {saving ? "Saving..." : "Save API key"}
-                </Text>
-              </Pressable>
             </View>
           </SettingsCard>
 

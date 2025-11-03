@@ -178,31 +178,27 @@ const CreateTravelModal = () => {
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
-    // Check if user has API key in settings
-    const hasApiKey = settings?.aiApiKey?.trim();
-
     // If no API key, check subscription status
-    if (!hasApiKey) {
-      if (settings?.isTrialVersion && settings?.trialCreditUsed) {
-        // Show trial promotion
-        try {
-          const customerInfo = await Purchases.getCustomerInfo();
-          const hasProSubscription =
-            typeof customerInfo.entitlements.active["Flidio Pro"] !==
-              "undefined" ||
-            customerInfo.activeSubscriptions.includes("flidio_monthly");
 
-          // If no subscription either, show promotion screen
-          if (!hasProSubscription) {
-            router.push("/promotionScreen");
-            return;
-          }
-        } catch (error) {
-          console.error("Failed to check subscription status:", error);
-          // If we can't check subscription, show promotion screen as fallback
+    if (settings?.isTrialVersion && settings?.trialCreditUsed) {
+      // Show trial promotion
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const hasProSubscription =
+          typeof customerInfo.entitlements.active["Flidio Pro"] !==
+            "undefined" ||
+          customerInfo.activeSubscriptions.includes("flidio_monthly");
+
+        // If no subscription either, show promotion screen
+        if (!hasProSubscription) {
           router.push("/promotionScreen");
           return;
         }
+      } catch (error) {
+        console.error("Failed to check subscription status:", error);
+        // If we can't check subscription, show promotion screen as fallback
+        router.push("/promotionScreen");
+        return;
       }
     }
 
@@ -233,10 +229,7 @@ const CreateTravelModal = () => {
 
     try {
       setIsGenerating(true);
-      const apiKeyOverride = hasApiKey || undefined;
-      const aiResponse = await generateResponse(prompt, {
-        apiKey: apiKeyOverride,
-      });
+      const aiResponse = await generateResponse(prompt);
       console.log("AI itinerary response:", aiResponse);
 
       const savedTravel = await createTravel({
@@ -310,7 +303,9 @@ const CreateTravelModal = () => {
             className="flex-row items-center gap-2"
           >
             <Ionicons name="close" size={22} color={themePalette.iconAccent} />
-            <Text className={`text-base font-medium ${themePalette.textPrimary}`}>
+            <Text
+              className={`text-base font-medium ${themePalette.textPrimary}`}
+            >
               Close
             </Text>
           </Pressable>
@@ -326,9 +321,7 @@ const CreateTravelModal = () => {
             className={`p-6 mt-6 rounded-3xl ${themePalette.card} border ${themePalette.border} ${isDarkMode ? "shadow-xl shadow-primary-900/20" : "shadow-lg shadow-primary-900/5"}`}
           >
             <View className="flex-row items-start gap-4">
-              <View
-                className={`p-4 rounded-2xl ${themePalette.statusInfoBg}`}
-              >
+              <View className={`p-4 rounded-2xl ${themePalette.statusInfoBg}`}>
                 <Ionicons
                   name="planet-outline"
                   size={28}
@@ -336,7 +329,9 @@ const CreateTravelModal = () => {
                 />
               </View>
               <View className="flex-1">
-                <Text className={`text-2xl font-semibold ${themePalette.textPrimary}`}>
+                <Text
+                  className={`text-2xl font-semibold ${themePalette.textPrimary}`}
+                >
                   Describe your dream escape
                 </Text>
                 <Text className={`mt-1 text-sm ${themePalette.textSecondary}`}>
@@ -416,7 +411,11 @@ const CreateTravelModal = () => {
                     <Text
                       className={`flex-1 text-xs ${startDate ? themePalette.textPrimary : ""}`}
                       style={{
-                        color: startDate ? undefined : (isDarkMode ? "#64748b" : "#94a3b8"),
+                        color: startDate
+                          ? undefined
+                          : isDarkMode
+                            ? "#64748b"
+                            : "#94a3b8",
                       }}
                     >
                       {startDate || "2025-05-10"}
@@ -447,7 +446,13 @@ const CreateTravelModal = () => {
                     />
                     <Text
                       className={`flex-1 text-xs ${endDate ? themePalette.textPrimary : ""}`}
-                      style={{ color: endDate ? undefined : (isDarkMode ? "#64748b" : "#94a3b8") }}
+                      style={{
+                        color: endDate
+                          ? undefined
+                          : isDarkMode
+                            ? "#64748b"
+                            : "#94a3b8",
+                      }}
                     >
                       {endDate || "2025-05-16"}
                     </Text>
@@ -540,7 +545,9 @@ const CreateTravelModal = () => {
                       >
                         <Text
                           className={`text-sm font-medium ${
-                            isActive ? themePalette.textAccent : themePalette.vibeInactiveText
+                            isActive
+                              ? themePalette.textAccent
+                              : themePalette.vibeInactiveText
                           }`}
                         >
                           {vibe}
@@ -641,7 +648,9 @@ const CreateTravelModal = () => {
                   onPress={handleCancelStartDate}
                   className="px-2 py-2"
                 >
-                  <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>
+                  <Text
+                    className={`text-sm font-semibold ${themePalette.textAccent}`}
+                  >
                     Cancel
                   </Text>
                 </Pressable>
@@ -654,7 +663,9 @@ const CreateTravelModal = () => {
                   onPress={handleConfirmStartDate}
                   className="px-2 py-2"
                 >
-                  <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>
+                  <Text
+                    className={`text-sm font-semibold ${themePalette.textAccent}`}
+                  >
                     Done
                   </Text>
                 </Pressable>
@@ -685,7 +696,9 @@ const CreateTravelModal = () => {
             >
               <View className="flex-row items-center justify-between">
                 <Pressable onPress={handleCancelEndDate} className="px-2 py-2">
-                  <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>
+                  <Text
+                    className={`text-sm font-semibold ${themePalette.textAccent}`}
+                  >
                     Cancel
                   </Text>
                 </Pressable>
@@ -695,7 +708,9 @@ const CreateTravelModal = () => {
                   End date
                 </Text>
                 <Pressable onPress={handleConfirmEndDate} className="px-2 py-2">
-                  <Text className={`text-sm font-semibold ${themePalette.textAccent}`}>
+                  <Text
+                    className={`text-sm font-semibold ${themePalette.textAccent}`}
+                  >
                     Done
                   </Text>
                 </Pressable>

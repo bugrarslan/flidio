@@ -6,7 +6,6 @@ export type ThemePreference = "light" | "dark";
 
 export interface StoredSettings {
   theme: ThemePreference;
-  aiApiKey: string;
   showOnboarding: boolean;
   isTrialVersion: boolean;
   trialCreditUsed?: boolean;
@@ -19,7 +18,6 @@ export const createDefaultSettings = (): StoredSettings => {
   const now = new Date().toISOString();
   return {
     theme: "light",
-    aiApiKey: "",
     showOnboarding: true,
     isTrialVersion: true,
     trialCreditUsed: false,
@@ -33,7 +31,6 @@ const mergeSettings = (current: StoredSettings | null, updates: UpdateSettingsIn
 
   return {
     theme: updates.theme ?? base.theme,
-    aiApiKey: updates.aiApiKey?.trim() ?? base.aiApiKey,
     showOnboarding: updates.showOnboarding ?? base.showOnboarding,
     isTrialVersion: updates.isTrialVersion ?? base.isTrialVersion,
     trialCreditUsed: updates.trialCreditUsed ?? base.trialCreditUsed,
@@ -109,7 +106,6 @@ export const useSettingsStorage = () => {
     }
   }, []);
 
-  const hasCustomAiKey = useMemo(() => Boolean(settings && settings.aiApiKey.length > 0), [settings]);
   const shouldShowOnboarding = useMemo(() => settings?.showOnboarding ?? true, [settings]);
 
   return {
@@ -117,7 +113,6 @@ export const useSettingsStorage = () => {
     loading,
     saving,
     error,
-    hasCustomAiKey,
     shouldShowOnboarding,
     refreshSettings,
     updateSettings,
