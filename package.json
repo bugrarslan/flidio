@@ -1,7 +1,7 @@
 {
   "name": "flidio",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "0.7.1",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -19,6 +19,8 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@rneui/themed": "^4.0.0-rc.8",
+    "@supabase/supabase-js": "^2.81.1",
     "expo": "~54.0.10",
     "expo-constants": "~18.0.9",
     "expo-dev-client": "~6.0.12",
@@ -45,8 +47,10 @@
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
+    "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
+    "supabase": "^2.58.5",
     "tailwindcss": "^3.4.17"
   },
   "devDependencies": {

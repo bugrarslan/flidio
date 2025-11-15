@@ -2,7 +2,7 @@
 
 AI-Powered Travel Planning Mobile App built with React Native, Expo, and TypeScript. It transforms travel preferences and details into personalized day-by-day itineraries using Google's Gemini AI API.
 
-Flidio is a comprehensive travel companion that features a freemium monetization model via RevenueCat, with an option for users to input their own Gemini API key for unrestricted use. All generated itineraries are stored locally using SQLite, ensuring an offline-first experience with complete privacy.
+Flidio is a comprehensive travel companion that features a freemium monetization model via RevenueCat. All generated itineraries are stored locally using SQLite, ensuring an offline-first experience with complete privacy.
 
 ------------------------------------------------------------------------
 
@@ -28,14 +28,14 @@ Flidio is a comprehensive travel companion that features a freemium monetization
 
 -   **AI-First Experience:** Seamless integration with Google Gemini API for state-of-the-art travel itinerary generation.
 -   **Local-First Architecture:** All generated itineraries and user data stored locally via SQLite for offline access and privacy.
--   **Flexible Monetization:** Freemium model with trial credit, Pro subscriptions via RevenueCat, and a bring-your-own-API-key option.
+-   **Flexible Monetization:** Freemium model with trial credit and Pro subscriptions via RevenueCat.
 -   **Cross-Platform:** Single codebase for both iOS and Android using Expo's managed workflow.
 -   **Type Safety:** Full TypeScript implementation across the entire codebase for robust development.
 -   **Personalized Experience:** User profiles with travel preferences that influence AI-generated recommendations.
 
 ### Project Metadata
 
--   **Version:** 0.7.0
+-   **Version:** 0.7.1
 -   **Platform:** iOS, Android
 -   **Framework:** React Native (0.81.4) + Expo (SDK 54)
 -   **Language:** TypeScript 5.9+
@@ -77,9 +77,8 @@ Flidio is a comprehensive travel companion that features a freemium monetization
 
 -   **Trial System:** New users receive one free AI-generated itinerary.
 -   **Pro Subscription:** Unlimited itinerary generation via RevenueCat ($2.99/month).
--   **Custom API Key:** Users can bring their own Gemini API key for unlimited access, bypassing subscriptions.
 -   **Access Flow:**
-    The app intelligently checks for a custom API key first, then a Pro subscription, and finally trial credit before showing the promotion screen.
+    The app checks for a Pro subscription first, then trial credit before showing the promotion screen.
 -   **Subscription Management:** 
     -   Purchase Pro subscription
     -   Restore previous purchases
@@ -89,7 +88,6 @@ Flidio is a comprehensive travel companion that features a freemium monetization
 ### ⚙️ Settings & Customization
 
 -   **Theme System:** Light & Dark mode with automatic detection of system preference.
--   **API Key Management:** Securely enter, view, and remove custom Gemini API key locally.
 -   **Data Management:** 
     -   Clear profile & settings
     -   Delete all itineraries
@@ -179,9 +177,11 @@ flidio/
 │   └── images/                      # Static images
 ├── components/
 │   └── ui/
-│       └── BackgroundCircles.tsx    # Decorative background component
+│       ├── BackgroundCircles.tsx    # Decorative background component
+│       └── SettingsCard.tsx         # Reusable settings card component
 ├── context/
 │   ├── SettingsContext.tsx          # Settings state management
+│   ├── SubscriptionContext.tsx      # Subscription state management
 │   └── UserProfileContext.tsx       # User profile state management
 ├── hooks/
 │   ├── useSettingsStorage.ts        # Settings persistence hook
@@ -192,7 +192,8 @@ flidio/
 │   ├── asyncStorage.ts              # AsyncStorage wrapper
 │   └── types.ts                     # Shared type definitions
 ├── utils/
-│   └── formatPrompt.ts              # AI prompt formatting utility
+│   ├── formatPrompt.ts              # AI prompt formatting utility
+│   └── themePalette.ts              # Theme color palette utility
 ├── app.json                         # Expo configuration
 ├── eas.json                         # EAS Build configuration
 ├── tailwind.config.js               # Tailwind CSS configuration
@@ -215,9 +216,10 @@ flidio/
 -   **Service Layer Pattern:** Decouples UI from data logic with dedicated service modules.
 -   **Repository Pattern:** Custom hooks orchestrate between storage layers and UI components.
 -   **Singleton Pattern:** Shared SQLite database connection reused throughout the app.
--   **Provider Pattern:** Nested context providers for settings and user profile state.
+-   **Provider Pattern:** Nested context providers for settings, user profile, and subscription state.
 -   **Adapter Pattern:** AsyncStorage service provides consistent interface for key-value storage.
 -   **Factory Pattern:** Default settings and profile creation functions.
+-   **Component Composition:** Reusable UI components (SettingsCard) with flexible prop-based customization.
 
 ------------------------------------------------------------------------
 
@@ -268,30 +270,52 @@ CREATE TABLE IF NOT EXISTS travels (
 
 ```typescript
 const canGenerateItinerary = async (): Promise<boolean> => {
-  // 1. Check for custom API key
-  if (settings?.aiApiKey?.trim()) return true;
-  
-  // 2. Check for Pro subscription
+  // 1. Check for Pro subscription
   const customerInfo = await Purchases.getCustomerInfo();
   if (customerInfo.entitlements.active["Flidio Pro"] || 
       customerInfo.activeSubscriptions.includes("flidio_monthly")) {
     return true;
   }
   
-  // 3. Check for trial credit
+  // 2. Check for trial credit
   if (settings?.isTrialVersion && !settings?.trialCreditUsed) {
     return true;
   }
   
-  // 4. Show promotion screen
+  // 3. Show promotion screen
   return false;
 };
 ```
 
+### Subscription Management
+
+**SubscriptionContext Features:**
+- Centralized subscription state management
+- Real-time customer info and offerings refresh
+- Purchase flow with error handling
+- Restore purchases functionality
+- Subscription status tracking (`isPro` boolean)
+- RevenueCat integration with proper initialization
+
+**Key Methods:**
+```typescript
+- refresh(): Promise<void>                        // Reload subscription data
+- purchasePackage(pkg): Promise<CustomerInfo>     // Purchase a package
+- restorePurchases(): Promise<CustomerInfo>       // Restore previous purchases
+- manageSubscription(): Promise<void>             // Open subscription management
+```
+
+**State Management:**
+- `loading` - Initial subscription data fetch
+- `processing` - Active purchase/restore operation
+- `customerInfo` - Current customer information
+- `offerings` - Available subscription packages
+- `isPro` - Boolean indicating Pro subscription status
+
 ### AsyncStorage Key Management
 
 **Storage Keys:**
-- `@flidio:settings` - App settings (theme, API key, trial status)
+- `@flidio:settings` - App settings (theme, trial status)
 - `@flidio:user-profile` - User profile data (name, age, preferences)
 
 **Features:**
@@ -304,9 +328,17 @@ const canGenerateItinerary = async (): Promise<boolean> => {
 
 **Implementation:**
 - Light and Dark mode with system preference detection
+- Centralized theme palette utility (`utils/themePalette.ts`)
 - Tailwind CSS custom color variables
 - Dynamic class names based on theme state
 - Consistent color palette across all screens
+- Type-safe theme colors with TypeScript
+
+**Theme Palette Features:**
+- 50+ predefined color mappings for both themes
+- Icon colors, button states, status indicators
+- Separate palettes for light and dark modes
+- Easy maintenance and consistent styling
 
 ------------------------------------------------------------------------
 
@@ -330,13 +362,15 @@ npm install
 
 ### Environment Configuration
 
-Create environment variables in your development environment:
+Create a `.env` file in the project root with the following variables:
 
 ```bash
 EXPO_PUBLIC_GOOGLE_AI_KEY=your_gemini_api_key_here
-EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY=your_ios_key_here
-EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=your_android_key_here
+EXPO_PUBLIC_REVENUECAT_IOS_KEY=your_ios_key_here
+EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=your_android_key_here
 ```
+
+**Note:** The app supports both iOS and Android RevenueCat configurations.
 
 ### Running the App
 
