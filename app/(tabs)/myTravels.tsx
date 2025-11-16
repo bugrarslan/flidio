@@ -1,11 +1,31 @@
-import { View, Text } from 'react-native'
+import { View, Text, Button } from 'react-native'
 import React from 'react'
+import { fetchFoursquareCafesNearby, fetchFoursquarePlaces, fetchMapboxDirections, fetchMapboxMatrix } from '@/services/supabase/edge-functions/test';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const MyTravels = () => {
+  const handleFetchFoursquarePlaces = async () => {
+      await fetchFoursquarePlaces();
+  };
+
+  const handleFetchFoursquareCafesNearby = async () => {
+     await fetchFoursquareCafesNearby();
+  };
+
+  const handleFetchMapboxMatrix = async () => {
+     await fetchMapboxMatrix();
+  };
+  
+    const handleFetchMapboxDirections = async () => {
+      await fetchMapboxDirections();
+  };
   return (
-    <View>
-      <Text>MyTravels</Text>
-    </View>
+    <SafeAreaView>
+      <Button title="Foursquare Places" onPress={handleFetchFoursquarePlaces} />
+      <Button title="Foursquare Cafes Nearby" onPress={handleFetchFoursquareCafesNearby} />
+      <Button title="Mapbox Matrix" onPress={handleFetchMapboxMatrix} />
+      <Button title="Mapbox Directions" onPress={handleFetchMapboxDirections} />
+    </SafeAreaView>
   )
 }
 

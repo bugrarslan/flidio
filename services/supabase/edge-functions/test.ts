@@ -20,6 +20,30 @@ export const fetchFoursquarePlaces = async () => {
   }
 };
 
+export const fetchFoursquareCafesNearby = async () => {
+  const { data, error } = await supabase.functions.invoke(
+    "foursquare-gateway",
+    {
+      body: {
+        // query: "kahve", // Query opsiyoneldir, kategori ile de aranabilir
+        ll: "41.0082,28.9784",
+        radius: 1000, // 1000 metre (varsayılan 5000 yerine)
+        params: {
+          // Foursquare Kategori ID'si (Örn: 13032 = Cafe)
+          categories: "13032", 
+          limit: "5" // Sadece 5 sonuç getir
+        }
+      },
+    }
+  );
+
+  if (error) {
+    console.error("Fonksiyon hatası:", error.message);
+  } else {
+    console.log("Yakındaki Kafeler:", data);
+  }
+};
+
 export const fetchMapboxDirections = async () => {
   // Örnek: İstanbul'da iki nokta arası sürüş rotası
   // Format: 'boylam1,enlem1;boylam2,enlem2'
@@ -49,5 +73,29 @@ export const fetchMapboxDirections = async () => {
     // 'data' artık Mapbox Directions yanıtıdır (routes, waypoints vb.)
     console.log("Rota Verisi:", data);
     // Örneğin rotayı çizmek için: data.routes[0].geometry
+  }
+};
+
+export const fetchMapboxMatrix = async () => {
+  const { data, error } = await supabase.functions.invoke(
+    "mapbox-gateway",
+    {
+      body: {
+        api: "matrix",
+        profile: "walking",
+        // 3 nokta örneği
+        coordinates: "28.9784,41.0082;28.9800,41.0100;28.9750,41.0050",
+        params: {
+          annotations: "duration,distance", // Hem süre hem mesafe bilgisini iste
+        },
+      },
+    }
+  );
+
+  if (error) {
+    console.error("Fonksiyon hatası:", error.message);
+  } else {
+    console.log("Matris Sonuçları:", data);
+    // data.durations ve data.distances dizilerini kullanabilirsiniz
   }
 };
