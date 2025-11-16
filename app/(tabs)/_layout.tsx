@@ -3,14 +3,22 @@ import React from "react";
 
 const TabLayout = () => {
   return (
-    <NativeTabs>
+    <NativeTabs minimizeBehavior="automatic">
       <NativeTabs.Trigger name="home">
         <Label>Home</Label>
         <Icon sf={{ default: "house", selected: "house.fill" }} drawable="ic_menu_home" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="myTravels">
+        <Icon sf={{ default: "map", selected: "map.fill" }} drawable="ic_menu_travels" />
+        <Label>My Travels</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <Icon sf={{ default: "gearshape", selected: "gearshape.fill" }} drawable="ic_menu_preferences" />
         <Label>Settings</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="create" role="search">
+        <Icon sf={{ default: "plus", selected: "plus" }} drawable="ic_menu_preferences" />
+        <Label>Create</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );

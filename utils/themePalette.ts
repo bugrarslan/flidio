@@ -57,6 +57,16 @@ export type ThemePalette = {
   onboardingCardBorder: string;
   onboardingCardBackground: string;
   onboardingIconWrapper: string;
+  socialButtonGoogle: string;
+  socialButtonGoogleBorder: string;
+  socialButtonGoogleText: string;
+  socialButtonApple: string;
+  socialButtonAppleBorder: string;
+  socialButtonAppleText: string;
+  dividerLine: string;
+  dividerText: string;
+  errorText: string;
+  errorBorder: string;
 };
 
 export function getThemePalette(theme?: string): ThemePalette {
@@ -122,6 +132,16 @@ export function getThemePalette(theme?: string): ThemePalette {
       onboardingCardBorder: "border-dark-onboarding-cardBorder",
       onboardingCardBackground: "bg-dark-onboarding-cardBackground",
       onboardingIconWrapper: "bg-dark-onboarding-iconWrapper",
+      socialButtonGoogle: "bg-dark-socialButton-google",
+      socialButtonGoogleBorder: "border-dark-socialButton-googleBorder",
+      socialButtonGoogleText: "text-dark-socialButton-googleText",
+      socialButtonApple: "bg-dark-socialButton-apple",
+      socialButtonAppleBorder: "border-dark-socialButton-appleBorder",
+      socialButtonAppleText: "text-dark-socialButton-appleText",
+      dividerLine: "bg-dark-divider-line",
+      dividerText: "text-dark-divider-text",
+      errorText: "text-dark-error-text",
+      errorBorder: "border-dark-error-border",
     };
   }
 
@@ -184,5 +204,15 @@ export function getThemePalette(theme?: string): ThemePalette {
     onboardingCardBorder: "border-light-onboarding-cardBorder",
     onboardingCardBackground: "bg-light-onboarding-cardBackground",
     onboardingIconWrapper: "bg-light-onboarding-iconWrapper",
+    socialButtonGoogle: "bg-light-socialButton-google",
+    socialButtonGoogleBorder: "border-light-socialButton-googleBorder",
+    socialButtonGoogleText: "text-light-socialButton-googleText",
+    socialButtonApple: "bg-light-socialButton-apple",
+    socialButtonAppleBorder: "border-light-socialButton-appleBorder",
+    socialButtonAppleText: "text-light-socialButton-appleText",
+    dividerLine: "bg-light-divider-line",
+    dividerText: "text-light-divider-text",
+    errorText: "text-light-error-text",
+    errorBorder: "border-light-error-border",
   };
 }

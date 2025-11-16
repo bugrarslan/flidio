@@ -1,11 +1,11 @@
 import {
   Alert,
+  Button,
   Linking,
   Pressable,
   ScrollView,
-  Switch,
   Text,
-  TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -17,9 +17,6 @@ import { useRouter } from "expo-router";
 
 import { getThemePalette } from "@/utils/themePalette";
 import BackgroundCircles from "@/components/ui/BackgroundCircles";
-import { useSettingsContext } from "@/context/SettingsContext";
-import { useUserProfileContext } from "@/context/UserProfileContext";
-import { resetTravelDatabase } from "@/services/databaseService";
 import { StatusBar } from "expo-status-bar";
 import { useSubscriptionContext } from "@/context/SubscriptionContext";
 import {
@@ -27,6 +24,8 @@ import {
   SettingsCardAction,
   SettingsCardListItem,
 } from "@/components/ui/SettingsCard";
+import { AuthService } from "@/services/supabase/auth/authSerivce";
+
 
 const SUPPORT_LINKS = [
   {
@@ -47,16 +46,8 @@ const SUPPORT_LINKS = [
 ] as const;
 
 const Settings = () => {
+  const colorScheme = useColorScheme();
   const router = useRouter();
-  const { settings, updateSettings, saving, clearSettings } =
-    useSettingsContext();
-  const {
-    clearProfile,
-    profile,
-    hasProfile,
-    loading: profileLoading,
-    saving: profileSaving,
-  } = useUserProfileContext();
   const {
     loading: subscriptionLoading,
     isPro,
@@ -66,168 +57,11 @@ const Settings = () => {
     error: subscriptionError,
   } = useSubscriptionContext();
 
-  const selectedTheme = settings?.theme ?? "light";
-
-  const themePalette = useMemo(
-    () => getThemePalette(selectedTheme),
-    [selectedTheme]
-  );
-
-  const isDarkMode = settings?.theme === "dark";
-
-  type DataAction = "profile-settings" | "itineraries" | "all";
-  const [pendingAction, setPendingAction] = useState<DataAction | null>(null);
-  const profileDisabled = profileLoading || profileSaving;
-
-  const profileUpdatedLabel = useMemo(() => {
-    if (!profile?.updatedAt) {
-      return null;
-    }
-    const updatedAtDate = new Date(profile.updatedAt);
-    if (Number.isNaN(updatedAtDate.getTime())) {
-      return null;
-    }
-    return updatedAtDate.toLocaleDateString();
-  }, [profile?.updatedAt]);
-
-  const profileTravelStylesLabel = useMemo(() => {
-    const styles = profile?.travelStyles ?? [];
-    if (!styles.length) {
-      return "Curate the travel styles you love to tailor suggestions.";
-    }
-    if (styles.length <= 3) {
-      return styles.join(", ");
-    }
-    const visible = styles.slice(0, 3).join(", ");
-    const remaining = styles.length - 3;
-    return `${visible} +${remaining} more`;
-  }, [profile?.travelStyles]);
+  const themePalette = getThemePalette(colorScheme ?? 'light');
 
   const appVersion = useMemo(() => {
     return Constants.expoConfig?.version ?? "1.0.0";
   }, []);
-
-  const handleToggleTheme = useCallback(async () => {
-    await Haptics.selectionAsync();
-    const nextTheme = isDarkMode ? "light" : "dark";
-
-    try {
-      await updateSettings({ theme: nextTheme });
-    } catch (error) {
-      console.error("Failed to toggle theme", error);
-      Alert.alert("Couldn't update theme", "Please try again in a moment.");
-    }
-  }, [isDarkMode, updateSettings]);
-
-  const executeDataAction = useCallback(
-    async (
-      key: DataAction,
-      action: () => Promise<void>,
-      success: { title: string; message: string }
-    ) => {
-      setPendingAction(key);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-
-      try {
-        await action();
-        await Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success
-        );
-        Alert.alert(success.title, success.message);
-      } catch (error) {
-        console.error(`[settings] Failed to execute ${key} data action`, error);
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert(
-          "Couldn't complete action",
-          "Please try again in a moment."
-        );
-      } finally {
-        setPendingAction(null);
-      }
-    },
-    []
-  );
-
-  const confirmClearProfileSettings = useCallback(() => {
-    void Haptics.selectionAsync();
-    Alert.alert(
-      "Clear profile & settings?",
-      "This removes your saved traveler profile and resets app preferences stored on this device.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: () =>
-            void executeDataAction(
-              "profile-settings",
-              async () => {
-                await Promise.all([clearProfile(), clearSettings()]);
-              },
-              {
-                title: "Profile & settings cleared",
-                message:
-                  "Your traveler profile and app preferences have been reset.",
-              }
-            ),
-        },
-      ]
-    );
-  }, [clearProfile, clearSettings, executeDataAction]);
-
-  const confirmDeleteItineraries = useCallback(() => {
-    void Haptics.selectionAsync();
-    Alert.alert(
-      "Delete all itineraries?",
-      "This deletes the Flidio travel database and every saved trip on this device.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () =>
-            void executeDataAction(
-              "itineraries",
-              async () => {
-                await resetTravelDatabase();
-              },
-              {
-                title: "Itineraries deleted",
-                message:
-                  "All saved itineraries have been removed from this device.",
-              }
-            ),
-        },
-      ]
-    );
-  }, [executeDataAction]);
-
-  const confirmClearAllData = useCallback(() => {
-    void Haptics.selectionAsync();
-    Alert.alert(
-      "Clear every trace?",
-      "This removes your profile, settings, and all saved itineraries from this device.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Erase everything",
-          style: "destructive",
-          onPress: () =>
-            void executeDataAction(
-              "all",
-              async () => {
-                await Promise.all([clearProfile(), clearSettings()]);
-                await resetTravelDatabase();
-              },
-              {
-                title: "All data cleared",
-                message: "Flidio has been reset. You can start fresh any time.",
-              }
-            ),
-        },
-      ]
-    );
-  }, [clearProfile, clearSettings, executeDataAction]);
 
   const handleOpenLink = async (url: string) => {
     await Haptics.selectionAsync();
@@ -280,7 +114,7 @@ const Settings = () => {
   return (
     <SafeAreaView className={`flex-1 ${themePalette.background}`}>
       <StatusBar style="auto" />
-      <BackgroundCircles isDarkMode={isDarkMode} />
+      <BackgroundCircles isDarkMode={colorScheme === "dark"} />
 
       <ScrollView
         className="flex-1 px-5"
@@ -443,7 +277,7 @@ const Settings = () => {
                       );
                     }}
                     className={`flex-row items-center justify-center gap-2 px-4 py-2.5 mt-3 rounded-full border ${
-                      isDarkMode
+                      colorScheme === "dark"
                         ? "border-red-500/30 bg-red-500/10"
                         : "border-red-500/20 bg-red-50"
                     }`}
@@ -454,7 +288,7 @@ const Settings = () => {
                       color={themePalette.iconDanger}
                     />
                     <Text
-                      className={`text-sm font-medium ${isDarkMode ? "text-red-400" : "text-red-600"}`}
+                      className={`text-sm font-medium ${colorScheme === "dark" ? "text-red-400" : "text-red-600"}`}
                     >
                       Manage Subscription
                     </Text>
@@ -497,7 +331,7 @@ const Settings = () => {
                     onPress={handleRestorePurchases}
                     disabled={subscriptionProcessing}
                     className={`flex-row items-center justify-center gap-2 px-4 py-2.5 mt-2 rounded-full border ${
-                      isDarkMode
+                      colorScheme === "dark"
                         ? "border-primary-500/30 bg-primary-500/10"
                         : "border-primary-500/20 bg-primary-50"
                     } ${subscriptionProcessing ? "opacity-60" : ""}`}
@@ -508,7 +342,7 @@ const Settings = () => {
                       color={themePalette.iconAccent}
                     />
                     <Text
-                      className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-primary-600"}`}
+                      className={`text-sm font-medium ${colorScheme === "dark" ? "text-white" : "text-primary-600"}`}
                     >
                       {subscriptionProcessing
                         ? "Restoring..."
@@ -520,302 +354,8 @@ const Settings = () => {
             </View>
           </SettingsCard>
 
-          {/* Traveler profile */}
-          <SettingsCard
-            title="Traveler profile"
-            description="Keep your preferences fresh so AI itineraries feel bespoke to you."
-            icon="person-circle-outline"
-            themePalette={themePalette}
-          >
-            <View className="gap-4">
-              {profileLoading ? (
-                <Text className={`text-sm ${themePalette.textSecondary}`}>
-                  Loading profile details...
-                </Text>
-              ) : hasProfile ? (
-                <View className="gap-4">
-                  <View className="flex-row items-start gap-3">
-                    <View
-                      className={`p-3 rounded-full ${themePalette.statusInfoBg}`}
-                    >
-                      <Ionicons
-                        name="id-card-outline"
-                        size={18}
-                        color={themePalette.iconAccent}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className={`text-base font-semibold ${themePalette.textPrimary}`}
-                      >
-                        {profile?.name}
-                      </Text>
-                      <Text
-                        className={`mt-0.5 text-sm ${themePalette.textSecondary}`}
-                      >
-                        {[
-                          profile?.location,
-                          profile?.age ? `${profile.age} yrs` : null,
-                        ]
-                          .filter(Boolean)
-                          .join(" • ")}
-                      </Text>
-                    </View>
-                  </View>
+          <Button onPress={AuthService.signOut} title="sign out"/>
 
-                  <View className="flex-row items-start gap-3">
-                    <View
-                      className={`p-3 rounded-full ${themePalette.statusInfoBg}`}
-                    >
-                      <Ionicons
-                        name="compass-outline"
-                        size={18}
-                        color={themePalette.iconAccent}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className={`text-xs font-semibold tracking-wide uppercase ${themePalette.textSecondary}`}
-                      >
-                        Travel styles
-                      </Text>
-                      <Text
-                        className={`mt-1 text-sm ${themePalette.textSecondary}`}
-                      >
-                        {profileTravelStylesLabel}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {profile?.bio ? (
-                    <View className="flex-row items-start gap-3">
-                      <View
-                        className={`p-3 rounded-full ${themePalette.statusInfoBg}`}
-                      >
-                        <Ionicons
-                          name="sparkles-outline"
-                          size={18}
-                          color={themePalette.iconAccent}
-                        />
-                      </View>
-                      <Text
-                        className={`flex-1 text-sm leading-5 ${themePalette.textSecondary}`}
-                      >
-                        {profile.bio}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                  {profileUpdatedLabel ? (
-                    <Text
-                      className={`text-[11px] uppercase tracking-[0.2em] ${themePalette.textSecondary}`}
-                    >
-                      Updated {profileUpdatedLabel}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : (
-                <View className="flex-row items-start gap-3">
-                  <View
-                    className={`p-3 rounded-full ${themePalette.statusInfoBg}`}
-                  >
-                    <Ionicons
-                      name="trail-sign-outline"
-                      size={18}
-                      color={themePalette.iconAccent}
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <Text
-                      className={`text-base font-semibold ${themePalette.textPrimary}`}
-                    >
-                      Build your traveler profile
-                    </Text>
-                    <Text
-                      className={`mt-1 text-sm ${themePalette.textSecondary}`}
-                    >
-                      Share a few details to help Flidio curate adventures that
-                      match your vibe.
-                    </Text>
-                  </View>
-                </View>
-              )}
-
-              <SettingsCardAction
-                icon="create-outline"
-                label={hasProfile ? "Update profile" : "Create profile"}
-                onPress={async () => {
-                  await Haptics.selectionAsync();
-                  router.push("/userProfileModal");
-                }}
-                disabled={profileDisabled}
-                variant="primary"
-                themePalette={themePalette}
-              />
-            </View>
-          </SettingsCard>
-
-          {/* theme */}
-          <SettingsCard
-            title="Dark Theme"
-            description="Switch between light and dark to match your environment."
-            themePalette={themePalette}
-            headerRight={
-              <Switch
-                value={isDarkMode}
-                onValueChange={handleToggleTheme}
-                trackColor={{
-                  false: themePalette.switchTrackOff,
-                  true: themePalette.switchTrackOn,
-                }}
-                thumbColor={themePalette.switchThumb}
-                ios_backgroundColor={themePalette.switchTrackOff}
-                disabled={saving}
-              />
-            }
-          />
-
-          {/* Data control */}
-          <SettingsCard
-            title="Data control"
-            description="Manage the travel plans and profile details stored locally on this device."
-            themePalette={themePalette}
-          >
-            <View className="gap-2 space-y-3">
-              <Pressable
-                onPress={confirmClearProfileSettings}
-                disabled={pendingAction !== null}
-                className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 ${themePalette.card} ${themePalette.border} ${
-                  pendingAction === "profile-settings"
-                    ? isDarkMode
-                      ? "border-primary-400 bg-primary-500/10"
-                      : "border-primary-500 bg-primary-100/60"
-                    : ""
-                } ${pendingAction !== null && pendingAction !== "profile-settings" ? "opacity-60" : ""}`}
-              >
-                <View className="flex-row items-center flex-1 gap-3">
-                  <View
-                    className={`p-3 rounded-full ${isDarkMode ? "bg-primary-500/20" : "bg-primary-500/10"}`}
-                  >
-                    <Ionicons
-                      name="people-outline"
-                      size={20}
-                      color={themePalette.iconAccent}
-                    />
-                  </View>
-                  <View className="flex-1 mr-2">
-                    <Text
-                      className={`text-base font-semibold ${themePalette.textPrimary}`}
-                    >
-                      {pendingAction === "profile-settings"
-                        ? "Clearing..."
-                        : "Clear profile & settings"}
-                    </Text>
-                    <Text className={`text-xs ${themePalette.textSecondary}`}>
-                      Removes saved traveler profile and app preferences.
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={
-                    pendingAction === "profile-settings"
-                      ? themePalette.iconAccent
-                      : themePalette.iconMuted
-                  }
-                />
-              </Pressable>
-
-              <Pressable
-                onPress={confirmDeleteItineraries}
-                disabled={pendingAction !== null}
-                className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 ${themePalette.card} ${themePalette.border} ${
-                  pendingAction === "itineraries"
-                    ? isDarkMode
-                      ? "border-red-400 bg-red-500/15"
-                      : "border-red-500 bg-red-500/10"
-                    : ""
-                } ${pendingAction !== null && pendingAction !== "itineraries" ? "opacity-60" : ""}`}
-              >
-                <View className="flex-row items-center flex-1 gap-3">
-                  <View
-                    className={`p-3 rounded-full ${themePalette.statusDangerBg}`}
-                  >
-                    <Ionicons
-                      name="map-outline"
-                      size={20}
-                      color={themePalette.iconDanger}
-                    />
-                  </View>
-                  <View className="flex-1 mr-2">
-                    <Text
-                      className={`text-base font-semibold ${themePalette.textPrimary}`}
-                    >
-                      {pendingAction === "itineraries"
-                        ? "Deleting..."
-                        : "Delete itineraries"}
-                    </Text>
-                    <Text className={`text-xs ${themePalette.textSecondary}`}>
-                      Deletes the Flidio travel database and all saved trips.
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={
-                    pendingAction === "itineraries"
-                      ? themePalette.iconDanger
-                      : themePalette.iconMuted
-                  }
-                />
-              </Pressable>
-
-              <Pressable
-                onPress={confirmClearAllData}
-                disabled={pendingAction !== null}
-                className={`flex-row items-center justify-between rounded-2xl border px-4 py-3 ${themePalette.card} ${themePalette.border} ${
-                  pendingAction === "all"
-                    ? isDarkMode
-                      ? "border-red-500 bg-red-500/20"
-                      : "border-red-600 bg-red-500/15"
-                    : ""
-                } ${pendingAction !== null && pendingAction !== "all" ? "opacity-60" : ""}`}
-              >
-                <View className="flex-row items-center flex-1 gap-3">
-                  <View
-                    className={`p-3 rounded-full ${themePalette.statusDangerBg}`}
-                  >
-                    <Ionicons
-                      name="trash-outline"
-                      size={20}
-                      color={themePalette.iconDanger}
-                    />
-                  </View>
-                  <View className="flex-1 mr-2">
-                    <Text
-                      className={`text-base font-semibold ${themePalette.textPrimary}`}
-                    >
-                      {pendingAction === "all" ? "Wiping..." : "Clear all data"}
-                    </Text>
-                    <Text className={`text-xs ${themePalette.textSecondary}`}>
-                      Runs both actions above for a completely fresh start.
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={
-                    pendingAction === "all"
-                      ? themePalette.iconDanger
-                      : themePalette.iconMuted
-                  }
-                />
-              </Pressable>
-            </View>
-          </SettingsCard>
 
           {/* About Flidio */}
           <SettingsCard title="About Flidio" themePalette={themePalette}>

@@ -113,6 +113,22 @@ module.exports = {
             cardBackground: "rgba(255, 255, 255, 0.1)",
             iconWrapper: "rgba(37, 99, 235, 0.6)",
           },
+          socialButton: {
+            google: "#ffffff",
+            googleBorder: "#d1d5db",
+            googleText: "#374151",
+            apple: "#000000",
+            appleBorder: "#1f2937",
+            appleText: "#ffffff",
+          },
+          divider: {
+            line: "rgba(148, 163, 184, 0.25)",
+            text: "#475569",
+          },
+          error: {
+            text: "#dc2626",
+            border: "#f87171",
+          },
         },
         dark: {
           background: "#020617",
@@ -209,6 +225,22 @@ module.exports = {
             cardBorder: "rgba(94, 106, 128, 0.35)",
             cardBackground: "rgba(15, 23, 42, 0.8)",
             iconWrapper: "rgba(37, 99, 235, 0.3)",
+          },
+          socialButton: {
+            google: "#252525",
+            googleBorder: "#1f2937",
+            googleText: "#ffffff",
+            apple: "#ffffff",
+            appleBorder: "#e5e7eb",
+            appleText: "#111827",
+          },
+          divider: {
+            line: "rgba(94, 106, 128, 0.35)",
+            text: "#64748b",
+          },
+          error: {
+            text: "#f87171",
+            border: "#f87171",
           },
         },
       },

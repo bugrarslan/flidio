@@ -6,7 +6,7 @@ import {
 } from "@/context/SettingsContext";
 import { UserProfileProvider } from "@/context/UserProfileContext";
 import { Stack, useRouter } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import Purchases from "react-native-purchases";
@@ -14,19 +14,16 @@ import {
   SubscriptionProvider,
   useSubscriptionContext,
 } from "@/context/SubscriptionContext";
+import { AuthService } from "@/services/supabase/auth/authSerivce";
+import type { Session } from "@supabase/supabase-js";
 
 const RootNavigator = () => {
   const router = useRouter();
-  const {
-    loading: settingsLoading,
-    shouldShowOnboarding,
-    updateSettings,
-    settings,
-  } = useSettingsContext();
   const { loading: subscriptionLoading, isPro } = useSubscriptionContext();
   const previousTargetRef = useRef<string | null>(null);
   const hasConfiguredPurchasesRef = useRef(false);
-  const isTrialVersion = settings?.isTrialVersion ?? true;
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Configure RevenueCat for both iOS and Android
   useEffect(() => {
@@ -37,32 +34,50 @@ const RootNavigator = () => {
     void configureRevenueCat();
   }, []);
 
+  // Check initial session and listen to auth state changes
   useEffect(() => {
-    if (settingsLoading || subscriptionLoading) {
+    let mounted = true;
+
+    // Get initial session
+    AuthService.getSession().then((initialSession) => {
+      if (mounted) {
+        setSession(initialSession);
+        setAuthLoading(false);
+      }
+    });
+
+    // Listen to auth state changes
+    const { data: authListener } = AuthService.onAuthStateChange(
+      (event, currentSession) => {
+        console.log('Auth state changed:', event);
+        if (mounted) {
+          setSession(currentSession);
+          setAuthLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // Navigate based on auth state
+  useEffect(() => {
+    if (authLoading || subscriptionLoading) {
       return;
     }
 
-    if (isPro && isTrialVersion) {
-      void updateSettings({ isTrialVersion: false });
+    const targetRoute = session ? "/(tabs)/home" : "/(auth)";
+    console.log("🚀 ~ RootNavigator ~ session:", session)
+    
+    // Avoid unnecessary navigation if we're already at the target
+    if (previousTargetRef.current !== targetRoute) {
+      previousTargetRef.current = targetRoute;
+      router.replace(targetRoute as any);
     }
-
-    const targetRoute = shouldShowOnboarding ? "/onboardingScreen" : "/home";
-
-    if (previousTargetRef.current === targetRoute) {
-      return;
-    }
-
-    previousTargetRef.current = targetRoute;
-    router.replace(targetRoute);
-  }, [
-    settingsLoading,
-    subscriptionLoading,
-    shouldShowOnboarding,
-    router,
-    isPro,
-    updateSettings,
-    isTrialVersion,
-  ]);
+  }, [authLoading, subscriptionLoading, session, router]);
 
   const configureRevenueCat = async () => {
     try {
@@ -121,6 +136,7 @@ const RootNavigator = () => {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(auth)" />
       <Stack.Screen name="travel/[id]" />
       <Stack.Screen
         name="userProfileModal"
@@ -130,7 +146,6 @@ const RootNavigator = () => {
         name="createTravelModal"
         options={{ presentation: "modal" }}
       />
-      <Stack.Screen name="onboardingScreen" />
       <Stack.Screen
         name="promotionScreen"
         options={{ presentation: "modal" }}

@@ -2,13 +2,14 @@ import BackgroundCircles from "@/components/ui/BackgroundCircles";
 import { useSettingsContext } from "@/context/SettingsContext";
 import { useUserProfileContext } from "@/context/UserProfileContext";
 import { deleteTravel, getAllTravels, type TravelRecord } from "@/services/databaseService";
+import { fetchFoursquarePlaces, fetchMapboxDirections } from "@/services/supabase/edge-functions/test";
 import { getThemePalette } from "@/utils/themePalette";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, FlatList, PanResponder, Pressable, Text, View } from "react-native";
+import { Alert, Animated, Button, FlatList, PanResponder, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ACTION_WIDTH = 96;
@@ -74,6 +75,16 @@ const Home = () => {
   const handleCreateTrip = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push("/createTravelModal");
+  };
+
+  const handleFetchFoursquarePlaces = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await fetchFoursquarePlaces();
+  };
+
+  const handleFetchMapboxDirections = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await fetchMapboxDirections();
   };
 
   const handleRetryLoadTravels = async () => {
@@ -414,6 +425,9 @@ const Home = () => {
                 </Text>
               </Pressable>
             </View>
+
+            <Button title="Foursquare Places" onPress={fetchFoursquarePlaces} />
+            <Button title="Mapbox Directions" onPress={fetchMapboxDirections} />
 
             <View className="mt-10">
               <View className="flex-row items-center justify-between">
