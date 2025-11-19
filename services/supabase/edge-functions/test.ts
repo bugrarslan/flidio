@@ -44,6 +44,40 @@ export const fetchFoursquareCafesNearby = async () => {
   }
 };
 
+export const testFoursquareGateway = async () => {
+  console.log("Foursquare Gateway (Sprint 5) testi başlatılıyor...");
+
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      "foursquare-gateway",
+      {
+        body: {
+          // --- Zorunlu Alanlar ---
+          query: "Restoran", // 'vibes' dizisine eklenecek
+          ll: "41.0082,28.9784", // İstanbul merkezi
+
+          // --- Opsiyonel Alanlar (Sprint 5'te eklendi) ---
+          radius: 200, // Varsayılan 5000 yerine 3000m
+          categories: "13065", // Sadece 'Restaurant' kategorisi (ID: 13065)
+          
+          // 'locations' tablosunu doldurmak için gereken tüm alanları istiyoruz
+          fields: "fsq_id,name,geocodes,location,categories,hours,distance",
+        },
+      }
+    );
+
+    if (error) {
+      console.error("Fonksiyon çağırma hatası:", error.message);
+    } else {
+      // 'data' Foursquare'den dönen 'results' dizisidir.
+      console.log("Test başarılı! Alınan mekanlar:", data);
+      console.log(`(Arka planda, ${data.length} mekan 'locations' tablosuna yazılıyor olmalı.)`);
+    }
+  } catch (e: any) {
+    console.error("Beklenmedik bir hata oluştu:", e.message);
+  }
+};
+
 export const fetchMapboxDirections = async () => {
   // Örnek: İstanbul'da iki nokta arası sürüş rotası
   // Format: 'boylam1,enlem1;boylam2,enlem2'
